@@ -1,0 +1,16 @@
+<script type="text/discourse-plugin" version="0.8">
+    api.decorateCooked($elem => {
+        const $paragraphs = $elem.children('p');
+        $.each($paragraphs, (paragraphIndex, paragraph) => {
+            const text = paragraph.innerText;
+            if (text.match(/\[dot\].*\[\/dot\]/)) {
+                const dotSrc = text.replace('[dot]', '').replace('[/dot]', '');
+                const graph = d3.select(paragraph).append('div');
+                const graphId = 'graph_' + paragraphIndex;
+                graph.attr('id', graphId);
+                graph.graphviz({useWorker: false})
+                    .renderDot(dotSrc);
+            }
+        });
+    });
+</script>
