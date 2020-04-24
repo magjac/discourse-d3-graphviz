@@ -16,7 +16,7 @@ like this:
 ```
 [dot]
 digraph {
-  a -> b;
+  a -> b
 }
 [/dot]
 ```
