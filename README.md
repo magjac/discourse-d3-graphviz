@@ -23,7 +23,7 @@ digraph {
 
 #### Animated transition
 
-An animated transition between the multiple graphs is shown when more
+An animated transition between multiple graphs is shown when more
 than one graph is added to the same paragraph of a post like so:
 
 ```
