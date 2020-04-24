@@ -1,0 +1,52 @@
+## discourse-d3-graphviz
+
+A Discourse theme component for rendering animated
+[Graphviz](https://www.graphviz.org/) graphs using
+[DOT](https://www.graphviz.org/doc/info/lang.html) source code. Based
+on [d3-graphviz](https://github.com/magjac/d3-graphviz).
+
+### Usage
+#### Basic
+
+See the [Graphviz](https://www.graphviz.org/documentation/) site for documentation and examples.
+
+To use with a discourse post, wrap the chart defintion in `dot` tags
+like this:
+
+```
+[dot]
+digraph {
+  a -> b;
+}
+[/dot]
+```
+
+#### Animated transition
+
+An animated transition between the multiple graphs is shown when more
+than one graph is added to the same paragraph of a post like so:
+
+```
+[dot]
+digraph {
+a -> b
+}
+[/dot]
+[dot]
+digraph {
+a -> b
+a -> c
+}
+[/dot]
+[dot]
+digraph {
+a -> b
+a -> c
+b -> c
+}
+[/dot]
+```
+
+### Installation
+
+See [How do I install a Theme or Theme Component?](https://meta.discourse.org/t/how-do-i-install-a-theme-or-theme-component/63682).
