@@ -10,7 +10,7 @@ on [d3-graphviz](https://github.com/magjac/d3-graphviz).
 
 See the [Graphviz](https://www.graphviz.org/documentation/) site for documentation and examples.
 
-To use with a discourse post, wrap the chart defintion in `dot` tags
+To use with a discourse post, wrap the graph defintion in `dot` tags
 like this:
 
 ```
