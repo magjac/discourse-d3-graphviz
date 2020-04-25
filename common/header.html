@@ -63,21 +63,24 @@
           let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
           if (height > minHeight) {
             minHeight = height;
+            height = svg.attr('height').split(' ');
+          }
+          else {
+            height = minHeight;
           }
 
           const newViewBoxValues = datum.attributes.viewBox.split(' ');
           const viewBoxValues = svg.attr('viewBox').split(' ');
-          viewBoxValues[3] = minHeight * 3 / 4;
+          viewBoxValues[3] = height * 3 / 4;
           newViewBoxValues[3] = minHeight * 3 / 4;
 
           const viewBox = viewBoxValues.join(' ');
           const newViewBox = newViewBoxValues.join(' ');
 
-          if (!heightWillIncrease) {
-            svg
-              .attr("height", minHeight)
-              .attr("viewBox", viewBox);
-          }
+          svg
+            .attr("height", height)
+            .attr("viewBox", viewBox);
+
           datum.attributes.height = minHeight;
           datum.attributes.viewBox = newViewBox;
 
