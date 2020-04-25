@@ -61,8 +61,8 @@
                     var svg = d3.select(this);
                     let heightAttr = datum.attributes.height;
                     let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
-                    newMinHeight = height > minHeight;
-                    if (newMinHeight) {
+                    heightWillIncrease = height > minHeight;
+                    if (heightWillIncrease) {
                         minHeight = height;
                     }
 
@@ -74,7 +74,7 @@
                     const viewBox = viewBoxValues.join(' ');
                     const newViewBox = newViewBoxValues.join(' ');
 
-                    if (!newMinHeight) {
+                    if (!heightWillIncrease) {
                         svg
                             .attr("height", minHeight)
                             .attr("viewBox", viewBox);
