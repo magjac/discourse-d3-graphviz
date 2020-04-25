@@ -1,137 +1,136 @@
 <script type="text/discourse-plugin" version="0.8">
-    // For each post
-    api.decorateCooked($elem => {
-        const $paragraphs = $elem.children('p');
-        // For each paragraph in post
-        $.each($paragraphs, (paragraphIndex, paragraph) => {
+  // For each post
+  api.decorateCooked($elem => {
+    const $paragraphs = $elem.children('p');
+    // For each paragraph in post
+    $.each($paragraphs, (paragraphIndex, paragraph) => {
 
-            let dotSrcs;
-            retrieveDotSources();
-            if (dotSrcs.length == 0) {
-                return;
-            }
+      let dotSrcs;
+      retrieveDotSources();
+      if (dotSrcs.length == 0) {
+        return;
+      }
 
-            let graph;
-            let graphviz
-            let stopButton;
-            createGraphArea();
-            initGraphviz();
-            if (dotSrcs.length > 1) {
-                addControls();
-            }
+      let graph;
+      let graphviz
+      let stopButton;
+      createGraphArea();
+      initGraphviz();
+      if (dotSrcs.length > 1) {
+        addControls();
+      }
 
-            let dotSrcIndex = 0;
-            let minHeight = 0;
-            let run = true;
-            let loop = true;
+      let dotSrcIndex = 0;
+      let minHeight = 0;
+      let run = true;
+      let loop = true;
 
-            render();
+      render();
 
-            function retrieveDotSources() {
-                const text = paragraph.innerText;
-                dotSrcs = text.split('[dot]')
-                    .slice(1)
-                    .map(dotSrc => dotSrc.replace('[/dot]', '').trim());
-            }
+      function retrieveDotSources() {
+        const text = paragraph.innerText;
+        dotSrcs = text.split('[dot]')
+          .slice(1)
+          .map(dotSrc => dotSrc.replace('[/dot]', '').trim());
+      }
 
-            function createGraphArea() {
-                graph = d3.select(paragraph).append('div');
-                const graphId = 'graph_' + paragraphIndex;
-                graph.attr('id', graphId);
-            }
+      function createGraphArea() {
+        graph = d3.select(paragraph).append('div');
+        const graphId = 'graph_' + paragraphIndex;
+        graph.attr('id', graphId);
+      }
 
-            function initGraphviz() {
-                graphviz = graph.graphviz({useWorker: false})
-                    .fit(false)
-                    .on('end', done);
-                return graphviz;
-            }
+      function initGraphviz() {
+        graphviz = graph.graphviz({useWorker: false})
+          .fit(false)
+          .on('end', done);
+        return graphviz;
+      }
 
-            function addControls() {
-                stopButton = graph
-                  .append('div')
-                  .append('button')
-                    .attr('class', 'btn-primary')
-                    .on('click', stop)
-                    .text('Stop');
-                }
+      function addControls() {
+        stopButton = graph
+          .append('div')
+          .append('button')
+          .attr('class', 'btn-primary')
+          .on('click', stop)
+          .text('Stop');
+      }
 
-            function attributer(datum, index, nodes) {
-                if (datum.tag == "svg") {
-                    var svg = d3.select(this);
-                    let heightAttr = datum.attributes.height;
-                    let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
-                    heightWillIncrease = height > minHeight;
-                    if (heightWillIncrease) {
-                        minHeight = height;
-                    }
+      function attributer(datum, index, nodes) {
+        if (datum.tag == "svg") {
+          var svg = d3.select(this);
+          let heightAttr = datum.attributes.height;
+          let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
+          if (height > minHeight) {
+            minHeight = height;
+          }
 
-                    const newViewBoxValues = datum.attributes.viewBox.split(' ');
-                    const viewBoxValues = svg.attr('viewBox').split(' ');
-                    viewBoxValues[3] = minHeight * 3 / 4;
-                    newViewBoxValues[3] = minHeight * 3 / 4;
+          const newViewBoxValues = datum.attributes.viewBox.split(' ');
+          const viewBoxValues = svg.attr('viewBox').split(' ');
+          viewBoxValues[3] = minHeight * 3 / 4;
+          newViewBoxValues[3] = minHeight * 3 / 4;
 
-                    const viewBox = viewBoxValues.join(' ');
-                    const newViewBox = newViewBoxValues.join(' ');
+          const viewBox = viewBoxValues.join(' ');
+          const newViewBox = newViewBoxValues.join(' ');
 
-                    if (!heightWillIncrease) {
-                        svg
-                            .attr("height", minHeight)
-                            .attr("viewBox", viewBox);
-                    }
-                    datum.attributes.height = minHeight;
-                    datum.attributes.viewBox = newViewBox;
+          if (!heightWillIncrease) {
+            svg
+              .attr("height", minHeight)
+              .attr("viewBox", viewBox);
+          }
+          datum.attributes.height = minHeight;
+          datum.attributes.viewBox = newViewBox;
 
-                }
-            }
+        }
+      }
 
-            function render() {
-                running = true;
-                if (dotSrcIndex > 0) {
-                    if (dotSrcIndex == 1) {
-                        graphviz
-                            .transition(() => d3.transition().delay(500).duration(1000))
-                            .attributer(attributer);
-                    }
-                }
-                const dotSrc = dotSrcs[dotSrcIndex];
-                if (dotSrcIndex < dotSrcs.length) {
-                    graphviz
-                        .renderDot(dotSrc);
-                }
-            }
+      function render() {
+        running = true;
+        if (dotSrcIndex > 0) {
+          if (dotSrcIndex == 1) {
+            graphviz
+              .transition(() => d3.transition().delay(500).duration(1000))
+              .attributer(attributer);
+          }
+        }
+        const dotSrc = dotSrcs[dotSrcIndex];
+        if (dotSrcIndex < dotSrcs.length) {
+          graphviz
+            .renderDot(dotSrc);
+        }
+      }
 
-            function done() {
-                const svg = graph.selectAll('svg');
-                const widthAttr = svg.attr('width');
-                const heightAttr = svg.attr('height');
-                let width = widthAttr.includes('pt') ? width = widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
-                let height = heightAttr.includes('pt') ? height = heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
-                if (height > minHeight) {
-                    minHeight = height;
-                }
-                dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
-                if (run && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
-                    render();
-                } else {
-                    running = false;
-                }
-            }
+      function done() {
+        const svg = graph.selectAll('svg');
+        const widthAttr = svg.attr('width');
+        const heightAttr = svg.attr('height');
+        let width = widthAttr.includes('pt') ? width = widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
+        let height = heightAttr.includes('pt') ? height = heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
+        if (height > minHeight) {
+          minHeight = height;
+        }
+        dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
+        if (run && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
+          render();
+        } else {
+          running = false;
+        }
+      }
 
-            function stop() {
-                console.log(run ? 'Stop' : 'Start');
-                run = !run;
-                stopButton.text(run ? 'Stop' : 'Start');
-                if (!running) {
-                    render();
-                }
-            }
+      function stop() {
+        console.log(run ? 'Stop' : 'Start');
+        run = !run;
+        stopButton.text(run ? 'Stop' : 'Start');
+        if (!running) {
+          render();
+        }
+      }
 
-        });
-    },
-    {
-        id: "dot",
-    },
-);
+    });
+  },
+  {
+    id: "dot",
+  },
+  );
 
 </script>
