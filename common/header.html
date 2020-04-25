@@ -21,6 +21,7 @@
       }
 
       let dotSrcIndex = 0;
+      let minWidth = 0;
       let minHeight = 0;
       let run = true;
       let loop = true;
@@ -59,8 +60,16 @@
       function attributer(datum, index, nodes) {
         if (datum.tag == "svg") {
           var svg = d3.select(this);
+          let widthAttr = datum.attributes.width;
+          let width = widthAttr.includes('pt') ? widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
           let heightAttr = datum.attributes.height;
           let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
+          if (width > minWidth) {
+            minWidth = width;
+          }
+          else {
+            width = minWidth;
+          }
           if (height > minHeight) {
             minHeight = height;
             height = svg.attr('height').split(' ');
@@ -71,6 +80,8 @@
 
           const newViewBoxValues = datum.attributes.viewBox.split(' ');
           const viewBoxValues = svg.attr('viewBox').split(' ');
+          viewBoxValues[2] = width * 3 / 4;
+          newViewBoxValues[2] = minWidth * 3 / 4;
           viewBoxValues[3] = height * 3 / 4;
           newViewBoxValues[3] = minHeight * 3 / 4;
 
@@ -78,9 +89,11 @@
           const newViewBox = newViewBoxValues.join(' ');
 
           svg
+            .attr("width", width)
             .attr("height", height)
             .attr("viewBox", viewBox);
 
+          datum.attributes.width = minWidth;
           datum.attributes.height = minHeight;
           datum.attributes.viewBox = newViewBox;
 
@@ -109,6 +122,9 @@
         const heightAttr = svg.attr('height');
         let width = widthAttr.includes('pt') ? width = widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
         let height = heightAttr.includes('pt') ? height = heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
+        if (width > minWidth) {
+          minWidth = width;
+        }
         if (height > minHeight) {
           minHeight = height;
         }
