@@ -33,9 +33,9 @@ An animated transition between multiple graphs is shown when more
 than one graph is added to the same paragraph of a post like so:
 
 ```
-[dot] digraph {bgcolor=lightblue a -> b}[/dot]
-[dot] digraph {bgcolor=lightblue a -> b; a -> c}[/dot]
-[dot] digraph {bgcolor=lightblue a -> b; a -> c; b -> c}[/dot]
+[dot] digraph {bgcolor=lightblue a -> b} [/dot]
+[dot] digraph {bgcolor=lightblue a -> b; a -> c} [/dot]
+[dot] digraph {bgcolor=lightblue a -> b; a -> c; b -> c} [/dot]
 ```
 
 or
@@ -64,11 +64,11 @@ b -> c
 Paragraph are separated by blank lines, so this will generate three separate graphs:
 
 ```
-[dot] digraph {bgcolor=lightblue a -> b}[/dot]
+[dot] digraph {bgcolor=lightblue a -> b} [/dot]
 
-[dot] digraph {bgcolor=lightblue a -> b; a -> c}[/dot]
+[dot] digraph {bgcolor=lightblue a -> b; a -> c} [/dot]
 
-[dot] digraph {bgcolor=lightblue a -> b; a -> c; b -> c}[/dot]
+[dot] digraph {bgcolor=lightblue a -> b; a -> c; b -> c} [/dot]
 ```
 
 ### Note
