@@ -14,6 +14,12 @@ To use with a discourse post, wrap the graph defintion in `dot` tags
 like this:
 
 ```
+[dot] digraph {a -> b} [/dot]
+```
+
+Multi-line is also supported:
+
+```
 [dot]
 digraph {
   a -> b
@@ -49,4 +55,4 @@ b -> c
 
 ### Installation
 
-See [How do I install a Theme or Theme Component?](https://meta.discourse.org/t/how-do-i-install-a-theme-or-theme-component/63682).
+See [How do I install a Theme or Theme Component?](https://meta.discourse.org/t/how-do-i-install-a-theme-or-theme-component/63682)
