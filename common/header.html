@@ -13,17 +13,21 @@
 
       let graph;
       let graphviz
-      let stopButton;
+      let startStopButton;
+      let run = false;
       createGraphArea();
       initGraphviz();
+      initVisibilityChangeHandler();
       if (dotSrcs.length > 1) {
         addControls();
+        run = true;
       }
 
       let dotSrcIndex = 0;
       let minWidth = 0;
       let minHeight = 0;
-      let run = true;
+      let running = false;
+      let visible = paragraphIsVisible();
       let loop = true;
 
       render();
@@ -49,11 +53,11 @@
       }
 
       function addControls() {
-        stopButton = graph
+        startStopButton = graph
           .append('div')
           .append('button')
           .attr('class', 'btn-primary')
-          .on('click', stop)
+          .on('click', startStop)
           .text('Stop');
       }
 
@@ -105,7 +109,7 @@
         if (dotSrcIndex > 0) {
           if (dotSrcIndex == 1) {
             graphviz
-              .transition(() => d3.transition().delay(500).duration(1000))
+              .transition(() => d3.transition().delay(500).duration(1500))
               .attributer(attributer);
           }
         }
@@ -129,19 +133,46 @@
           minHeight = height;
         }
         dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
-        if (run && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
+        visible = paragraphIsVisible();
+        if (run && visible && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
           render();
         } else {
           running = false;
         }
       }
 
-      function stop() {
+      function startStop() {
         console.log(run ? 'Stop' : 'Start');
         run = !run;
-        stopButton.text(run ? 'Stop' : 'Start');
+        startStopButton.text(run ? 'Stop' : 'Start');
         if (!running) {
           render();
+        }
+      }
+
+      function paragraphIsVisible() {
+        const bounding = paragraph.getBoundingClientRect();
+        return (
+          !document.hidden &&
+            bounding.top >= 0 &&
+            bounding.left >= 0 &&
+            bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+      }
+
+      function initVisibilityChangeHandler() {
+        document.addEventListener('visibilitychange', visibilityChangeHandler);
+        window.addEventListener('scroll', visibilityChangeHandler);
+      }
+
+      function visibilityChangeHandler() {
+        const wasVisible = visible;
+        visible = paragraphIsVisible();
+        if (!wasVisible && visible) {
+          if (!running) {
+            render();
+          }
         }
       }
 
