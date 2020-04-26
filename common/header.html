@@ -27,7 +27,7 @@
       let minWidth = 0;
       let minHeight = 0;
       let running = false;
-      let visible = paragraphIsVisible();
+      let visible = graphIsVisible();
       let loop = true;
 
       render();
@@ -133,7 +133,7 @@
           minHeight = height;
         }
         dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
-        visible = paragraphIsVisible();
+        visible = graphIsVisible();
         if (run && visible && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
           render();
         } else {
@@ -150,8 +150,8 @@
         }
       }
 
-      function paragraphIsVisible() {
-        const bounding = paragraph.getBoundingClientRect();
+      function graphIsVisible() {
+        const bounding = graph.node().getBoundingClientRect();
         return (
           !document.hidden &&
             bounding.top >= 0 &&
@@ -166,7 +166,7 @@
 
       function visibilityChangeHandler() {
         const wasVisible = visible;
-        visible = paragraphIsVisible();
+        visible = graphIsVisible();
         if (!wasVisible && visible) {
           if (!running) {
             render();
