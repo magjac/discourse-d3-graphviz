@@ -71,6 +71,10 @@ Paragraph are separated by blank lines, so this will generate three separate gra
 [dot] digraph {bgcolor=lightblue a -> b; a -> c; b -> c}[/dot]
 ```
 
+### Note
+
+Currently blank lines within the DOT source code is not supported due to [this bug](https://github.com/magjac/discourse-d3-graphviz/issues/15).
+
 ### Installation
 
 See [How do I install a Theme or Theme Component?](https://meta.discourse.org/t/how-do-i-install-a-theme-or-theme-component/63682)
