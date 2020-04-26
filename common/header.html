@@ -13,7 +13,7 @@
 
       let graph;
       let graphviz
-      let stopButton;
+      let startStopButton;
       createGraphArea();
       initGraphviz();
       if (dotSrcs.length > 1) {
@@ -49,11 +49,11 @@
       }
 
       function addControls() {
-        stopButton = graph
+        startStopButton = graph
           .append('div')
           .append('button')
           .attr('class', 'btn-primary')
-          .on('click', stop)
+          .on('click', startStop)
           .text('Stop');
       }
 
@@ -138,10 +138,10 @@
         }
       }
 
-      function stop() {
+      function startStop() {
         console.log(run ? 'Stop' : 'Start');
         run = !run;
-        stopButton.text(run ? 'Stop' : 'Start');
+        startStopButton.text(run ? 'Stop' : 'Start');
         if (!running) {
           render();
         }
