@@ -1,4 +1,6 @@
 <script type="text/discourse-plugin" version="0.8">
+  const topBarHeight = 60; // FIXME: Determine this dynamically
+  const graphs = [];
   // For each post
   api.decorateCooked($elem => {
     const $paragraphs = $elem.children('p');
@@ -16,6 +18,8 @@
       let startStopButton;
       let run = false;
       createGraphArea();
+      const graphIndex = graphs.length;
+      graphs.push(graph);
       initGraphviz();
       initVisibilityChangeHandler();
       if (dotSrcs.length > 1) {
@@ -27,7 +31,7 @@
       let minWidth = 0;
       let minHeight = 0;
       let running = false;
-      let visible = paragraphIsVisible();
+      let visible = graphIsVisible();
       let loop = true;
 
       render();
@@ -57,6 +61,8 @@
           .append('div')
           .append('button')
           .attr('class', 'btn-primary')
+          .style('margin-top', '15px')
+          .style('margin-bottom', '15px')
           .on('click', startStop)
           .text('Stop');
       }
@@ -133,7 +139,7 @@
           minHeight = height;
         }
         dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
-        visible = paragraphIsVisible();
+        visible = graphIsVisible();
         if (run && visible && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
           render();
         } else {
@@ -150,15 +156,50 @@
         }
       }
 
-      function paragraphIsVisible() {
-        const bounding = paragraph.getBoundingClientRect();
-        return (
-          !document.hidden &&
-            bounding.top >= 0 &&
-            bounding.left >= 0 &&
-            bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-            bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
-        );
+      function graphIsVisible() {
+        const bounding = graph.node().getBoundingClientRect();
+        if (document.hidden) {
+          return false;
+        }
+        else if (bounding.top >= topBarHeight && bounding.bottom <= window.innerHeight) {
+          // The whole graph is visible
+          return true;
+        }
+        else if (bounding.top <= topBarHeight && bounding.bottom >= window.innerHeight) {
+          // The graph covers the whole visible area
+          return true;
+        }
+        else if (bounding.top >= topBarHeight && bounding.top <= window.innerHeight) {
+          // The top of the graph is visible
+          if (graphIndex == 0) {
+            // It's the first graph
+            return true;
+          }
+          const prevGraph = graphs[graphIndex - 1];
+          const prevBounding = prevGraph.node().getBoundingClientRect();
+          if (prevBounding.bottom > 0) {
+            // The bottom of the previous graph is also visible
+            return false;
+          }
+          return true;
+        }
+        else if (bounding.bottom >= topBarHeight && bounding.bottom <= window.innerHeight) {
+          // The bottom of the graph is visible
+          if (graphIndex == graphs.length - 1) {
+            // It's the last graph
+            return true;
+          }
+          const nextGraph = graphs[graphIndex + 1];
+          const nextBounding = nextGraph.node().getBoundingClientRect();
+          if (nextBounding.top <= window.innerHeight) {
+            // The top of the next graph is also visible
+            return false;
+          }
+          return true;
+        }
+        else {
+          return false;
+        }
       }
 
       function initVisibilityChangeHandler() {
@@ -168,7 +209,7 @@
 
       function visibilityChangeHandler() {
         const wasVisible = visible;
-        visible = paragraphIsVisible();
+        visible = graphIsVisible();
         if (!wasVisible && visible) {
           if (!running) {
             render();
