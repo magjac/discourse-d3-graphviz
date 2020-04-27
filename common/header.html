@@ -157,7 +157,7 @@
         return (
           !document.hidden &&
             bounding.top >= 0 &&
-            bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+            bounding.bottom <= window.innerHeight
         );
       }
 
