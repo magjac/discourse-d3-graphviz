@@ -154,11 +154,15 @@
 
       function graphIsVisible() {
         const bounding = graph.node().getBoundingClientRect();
-        return (
-          !document.hidden &&
-            bounding.top >= 0 &&
-            bounding.bottom <= window.innerHeight
-        );
+        if (document.hidden) {
+          return false;
+        }
+        else if (bounding.top >= 0 && bounding.bottom <= window.innerHeight) {
+          return true;
+        }
+        else {
+          return false;
+        }
       }
 
       function initVisibilityChangeHandler() {
