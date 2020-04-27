@@ -9,6 +9,7 @@
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
       let dotSrcs;
+      const optionsObjects = [];
       retrieveDotSources();
       if (dotSrcs.length == 0) {
         return;
@@ -40,15 +41,36 @@
       function retrieveDotSources() {
         const text = partialParagraphText + paragraph.innerText;
         partialParagraphText = '';
-        dotSrcs = text.split('[dot]')
+        dotSrcs = text.split('[dot')
           .slice(1)
         if (dotSrcs.length > 0 && !dotSrcs[dotSrcs.length - 1].includes('[/dot]')) {
           partialParagraphText = text;
           dotSrcs = []
           return;
         }
+        for (const dotSrc of dotSrcs) {
+          const optionsObject = Object.assign(
+            {},
+            optionsObjects.length == 0 ? {} : optionsObjects[optionsObjects.length - 1]
+          );
+          attributes=dotSrc.split(']')[0].match(/ *[^ \]]*=[^ \]]*/g) || [];
+          for (attribute of attributes) {
+            const [name, value] = attribute.trim().split('=')
+            if (value == 'true') {
+              value = true;
+            }
+            else if (value == 'false') {
+              value = false;
+            }
+            else if (!isNaN(value)) {
+              value = Number(value);
+            }
+            optionsObject[name] = value;
+          }
+          optionsObjects.push(optionsObject);
+        }
         dotSrcs = dotSrcs
-          .map(dotSrc => dotSrc.replace('[/dot]', '').trim());
+          .map(dotSrc => dotSrc.replace(/[^\]]*]/, '').replace('[/dot]', '').trim());
       }
 
       function createGraphArea() {
@@ -59,6 +81,7 @@
 
       function initGraphviz() {
         graphviz = graph.graphviz({useWorker: false})
+          .options(optionsObjects[0])
           .fit(false)
           .on('end', done);
         return graphviz;
@@ -120,16 +143,11 @@
 
       function render() {
         running = true;
-        if (dotSrcIndex > 0) {
-          if (dotSrcIndex == 1) {
-            graphviz
-              .transition(() => d3.transition().delay(500).duration(1500))
-              .attributer(attributer);
-          }
-        }
+        const options = optionsObjects[dotSrcIndex];
         const dotSrc = dotSrcs[dotSrcIndex];
         if (dotSrcIndex < dotSrcs.length) {
           graphviz
+            .options(options)
             .renderDot(dotSrc);
         }
       }
@@ -149,6 +167,22 @@
         dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
         visible = graphIsVisible();
         if (run && visible && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
+          const options = optionsObjects[dotSrcIndex];
+          const delay = options.delay || 500;
+          const duration = options.duration || 1500;
+          let ease;
+          if (options.ease == 'linear') {
+            ease = d3.easeLinear
+          }
+          else {
+            ease = d3.easeCubic
+          }
+          graphviz
+            .attributer(attributer)
+            .transition(() => d3.transition()
+                        .ease(ease)
+                        .delay(delay)
+                        .duration(duration));
           render();
         } else {
           running = false;
