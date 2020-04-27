@@ -5,6 +5,7 @@
   api.decorateCooked($elem => {
     const $paragraphs = $elem.children('p');
     // For each paragraph in post
+    let partialParagraphText = '';
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
       let dotSrcs;
@@ -37,9 +38,16 @@
       render();
 
       function retrieveDotSources() {
-        const text = paragraph.innerText;
+        const text = partialParagraphText + paragraph.innerText;
+        partialParagraphText = '';
         dotSrcs = text.split('[dot]')
           .slice(1)
+        if (dotSrcs.length > 0 && !dotSrcs[dotSrcs.length - 1].includes('[/dot]')) {
+          partialParagraphText = text;
+          dotSrcs = []
+          return;
+        }
+        dotSrcs = dotSrcs
           .map(dotSrc => dotSrc.replace('[/dot]', '').trim());
       }
 
