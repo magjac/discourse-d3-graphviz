@@ -61,7 +61,7 @@ b -> c
 [/dot]
 ```
 
-Paragraph are separated by blank lines, so this will generate three separate graphs:
+Paragraphs are separated by blank lines, so this will generate three separate graphs:
 
 ```
 [dot] digraph {bgcolor=lightblue a -> b} [/dot]
