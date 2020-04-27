@@ -1,4 +1,5 @@
 <script type="text/discourse-plugin" version="0.8">
+  const topBarHeight = 60; // FIXME: Determine this dynamically
   // For each post
   api.decorateCooked($elem => {
     const $paragraphs = $elem.children('p');
@@ -157,7 +158,8 @@
         if (document.hidden) {
           return false;
         }
-        else if (bounding.top >= 0 && bounding.bottom <= window.innerHeight) {
+        else if (bounding.top >= topBarHeight && bounding.bottom <= window.innerHeight) {
+          // The whole graph is visible
           return true;
         }
         else {
