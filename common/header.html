@@ -1,5 +1,6 @@
 <script type="text/discourse-plugin" version="0.8">
   const topBarHeight = 60; // FIXME: Determine this dynamically
+  const graphs = [];
   // For each post
   api.decorateCooked($elem => {
     const $paragraphs = $elem.children('p');
@@ -17,6 +18,8 @@
       let startStopButton;
       let run = false;
       createGraphArea();
+      const graphIndex = graphs.length;
+      graphs.push(graph);
       initGraphviz();
       initVisibilityChangeHandler();
       if (dotSrcs.length > 1) {
@@ -164,6 +167,34 @@
         }
         else if (bounding.top <= topBarHeight && bounding.bottom >= window.innerHeight) {
           // The graph covers the whole visible area
+          return true;
+        }
+        else if (bounding.top >= topBarHeight && bounding.top <= window.innerHeight) {
+          // The top of the graph is visible
+          if (graphIndex == 0) {
+            // It's the first graph
+            return true;
+          }
+          const prevGraph = graphs[graphIndex - 1];
+          const prevBounding = prevGraph.node().getBoundingClientRect();
+          if (prevBounding.bottom > 0) {
+            // The bottom of the previous graph is also visible
+            return false;
+          }
+          return true;
+        }
+        else if (bounding.bottom >= topBarHeight && bounding.bottom <= window.innerHeight) {
+          // The bottom of the graph is visible
+          if (graphIndex == graphs.length - 1) {
+            // It's the last graph
+            return true;
+          }
+          const nextGraph = graphs[graphIndex + 1];
+          const nextBounding = nextGraph.node().getBoundingClientRect();
+          if (nextBounding.top <= window.innerHeight) {
+            // The top of the next graph is also visible
+            return false;
+          }
           return true;
         }
         else {
