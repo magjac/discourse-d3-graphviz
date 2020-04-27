@@ -162,6 +162,10 @@
           // The whole graph is visible
           return true;
         }
+        else if (bounding.top <= topBarHeight && bounding.bottom >= window.innerHeight) {
+          // The graph covers the whole visible area
+          return true;
+        }
         else {
           return false;
         }
