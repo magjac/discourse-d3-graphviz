@@ -51,7 +51,7 @@
         for (const dotSrc of dotSrcs) {
           const optionsObject = Object.assign(
             {},
-            optionsObjects.length == 0 ? {} : optionsObjects[optionsObjects.length - 1]
+            optionsObjects.length == 0 ? {useWorker: true} : optionsObjects[optionsObjects.length - 1]
           );
           attributes=dotSrc.split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*)/g) || [];
           for (attribute of attributes) {
@@ -83,7 +83,7 @@
       }
 
       function initGraphviz() {
-        graphviz = graph.graphviz({useWorker: false})
+        graphviz = graph.graphviz({useWorker: optionsObjects[0].useWorker})
           .options(optionsObjects[0])
           .attributer(attributer)
           .fit(false)
