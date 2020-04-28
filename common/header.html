@@ -53,7 +53,7 @@
             {},
             optionsObjects.length == 0 ? {useWorker: true} : optionsObjects[optionsObjects.length - 1]
           );
-          attributes=dotSrc.split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*)/g) || [];
+          attributes=dotSrc.split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
           for (attribute of attributes) {
             const [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
             if (value == 'true') {
@@ -64,6 +64,9 @@
             }
             else if (!isNaN(value)) {
               value = Number(value);
+            }
+            else if (value[0] == '(') {
+              value = value.slice(1, -1).split(',').map(v => Number(v))
             }
             optionsObject[name] = value;
           }
