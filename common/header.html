@@ -53,9 +53,9 @@
             {},
             optionsObjects.length == 0 ? {} : optionsObjects[optionsObjects.length - 1]
           );
-          attributes=dotSrc.split(']')[0].match(/ *[^ \]]*=[^ \]]*/g) || [];
+          attributes=dotSrc.split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*)/g) || [];
           for (attribute of attributes) {
-            const [name, value] = attribute.trim().split('=')
+            const [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
             if (value == 'true') {
               value = true;
             }
@@ -101,6 +101,8 @@
 
       function attributer(datum, index, nodes) {
         if (datum.tag == "svg") {
+          const options = optionsObjects[dotSrcIndex];
+          const border = options.border;
           var svg = d3.select(this);
           if (svg.attr('xmlns') != null) {
             let widthAttr = datum.attributes.width;
@@ -132,6 +134,7 @@
             const newViewBox = newViewBoxValues.join(' ');
 
             svg
+              .attr("border", border)
               .attr("width", width)
               .attr("height", height)
               .attr("viewBox", viewBox);
@@ -140,6 +143,7 @@
             datum.attributes.height = minHeight;
             datum.attributes.viewBox = newViewBox;
           }
+          datum.attributes.style = 'border: ' + border;
         }
       }
 
