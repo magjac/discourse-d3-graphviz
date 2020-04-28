@@ -67,6 +67,9 @@
             }
             optionsObject[name] = value;
           }
+          if (optionsObject.hasOwnProperty('tweenPrecision') && optionsObject.tweenPrecision < 1) {
+            optionsObject.tweenPrecision = 1;
+          }
           optionsObjects.push(optionsObject);
         }
         dotSrcs = dotSrcs
