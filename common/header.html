@@ -66,7 +66,12 @@
               value = Number(value);
             }
             else if (value[0] == '(') {
-              value = value.slice(1, -1).split(',').map(v => Number(v))
+              if (value[1] == '(') {
+                value = value.slice(2, -2).split('),(').map(a => a.split(',').map(v => Number(v)));
+              }
+              else {
+                value = value.slice(1, -1).split(',').map(v => Number(v))
+              }
             }
             optionsObject[name] = value;
           }
