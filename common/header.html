@@ -9,6 +9,7 @@
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
       let dotSrcs;
+      const optionsObjects = [];
       retrieveDotSources();
       if (dotSrcs.length == 0) {
         return;
@@ -40,15 +41,47 @@
       function retrieveDotSources() {
         const text = partialParagraphText + paragraph.innerText;
         partialParagraphText = '';
-        dotSrcs = text.split('[dot]')
+        dotSrcs = text.split('[dot')
           .slice(1)
         if (dotSrcs.length > 0 && !dotSrcs[dotSrcs.length - 1].includes('[/dot]')) {
           partialParagraphText = text;
           dotSrcs = []
           return;
         }
+        for (const dotSrc of dotSrcs) {
+          const optionsObject = Object.assign(
+            {},
+            optionsObjects.length == 0 ? {useWorker: true} : optionsObjects[optionsObjects.length - 1]
+          );
+          attributes=dotSrc.split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
+          for (attribute of attributes) {
+            const [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
+            if (value == 'true') {
+              value = true;
+            }
+            else if (value == 'false') {
+              value = false;
+            }
+            else if (!isNaN(value)) {
+              value = Number(value);
+            }
+            else if (value[0] == '(') {
+              if (value[1] == '(') {
+                value = value.slice(2, -2).split('),(').map(a => a.split(',').map(v => Number(v)));
+              }
+              else {
+                value = value.slice(1, -1).split(',').map(v => Number(v))
+              }
+            }
+            optionsObject[name] = value;
+          }
+          if (optionsObject.hasOwnProperty('tweenPrecision') && optionsObject.tweenPrecision < 1) {
+            optionsObject.tweenPrecision = 1;
+          }
+          optionsObjects.push(optionsObject);
+        }
         dotSrcs = dotSrcs
-          .map(dotSrc => dotSrc.replace('[/dot]', '').trim());
+          .map(dotSrc => dotSrc.replace(/[^\]]*]/, '').replace('[/dot]', '').trim());
       }
 
       function createGraphArea() {
@@ -58,7 +91,9 @@
       }
 
       function initGraphviz() {
-        graphviz = graph.graphviz({useWorker: false})
+        graphviz = graph.graphviz({useWorker: optionsObjects[0].useWorker})
+          .options(optionsObjects[0])
+          .attributer(attributer)
           .fit(false)
           .on('end', done);
         return graphviz;
@@ -77,59 +112,59 @@
 
       function attributer(datum, index, nodes) {
         if (datum.tag == "svg") {
+          const options = optionsObjects[dotSrcIndex];
+          const border = options.border;
           var svg = d3.select(this);
-          let widthAttr = datum.attributes.width;
-          let width = widthAttr.includes('pt') ? widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
-          let heightAttr = datum.attributes.height;
-          let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
-          if (width > minWidth) {
-            minWidth = width;
+          if (svg.attr('xmlns') != null) {
+            let widthAttr = datum.attributes.width;
+            let width = widthAttr.includes('pt') ? widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
+            let heightAttr = datum.attributes.height;
+            let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
+            if (width > minWidth) {
+              minWidth = width;
+            }
+            else {
+              width = minWidth;
+            }
+            if (height > minHeight) {
+              minHeight = height;
+              height = svg.attr('height').split(' ');
+            }
+            else {
+              height = minHeight;
+            }
+
+            const newViewBoxValues = datum.attributes.viewBox.split(' ');
+            const viewBoxValues = svg.attr('viewBox').split(' ');
+            viewBoxValues[2] = width * 3 / 4;
+            newViewBoxValues[2] = minWidth * 3 / 4;
+            viewBoxValues[3] = height * 3 / 4;
+            newViewBoxValues[3] = minHeight * 3 / 4;
+
+            const viewBox = viewBoxValues.join(' ');
+            const newViewBox = newViewBoxValues.join(' ');
+
+            svg
+              .attr("border", border)
+              .attr("width", width)
+              .attr("height", height)
+              .attr("viewBox", viewBox);
+
+            datum.attributes.width = minWidth;
+            datum.attributes.height = minHeight;
+            datum.attributes.viewBox = newViewBox;
           }
-          else {
-            width = minWidth;
-          }
-          if (height > minHeight) {
-            minHeight = height;
-            height = svg.attr('height').split(' ');
-          }
-          else {
-            height = minHeight;
-          }
-
-          const newViewBoxValues = datum.attributes.viewBox.split(' ');
-          const viewBoxValues = svg.attr('viewBox').split(' ');
-          viewBoxValues[2] = width * 3 / 4;
-          newViewBoxValues[2] = minWidth * 3 / 4;
-          viewBoxValues[3] = height * 3 / 4;
-          newViewBoxValues[3] = minHeight * 3 / 4;
-
-          const viewBox = viewBoxValues.join(' ');
-          const newViewBox = newViewBoxValues.join(' ');
-
-          svg
-            .attr("width", width)
-            .attr("height", height)
-            .attr("viewBox", viewBox);
-
-          datum.attributes.width = minWidth;
-          datum.attributes.height = minHeight;
-          datum.attributes.viewBox = newViewBox;
-
+          datum.attributes.style = 'border: ' + border;
         }
       }
 
       function render() {
         running = true;
-        if (dotSrcIndex > 0) {
-          if (dotSrcIndex == 1) {
-            graphviz
-              .transition(() => d3.transition().delay(500).duration(1500))
-              .attributer(attributer);
-          }
-        }
+        const options = optionsObjects[dotSrcIndex];
         const dotSrc = dotSrcs[dotSrcIndex];
         if (dotSrcIndex < dotSrcs.length) {
           graphviz
+            .options(options)
             .renderDot(dotSrc);
         }
       }
@@ -149,6 +184,21 @@
         dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
         visible = graphIsVisible();
         if (run && visible && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
+          const options = optionsObjects[dotSrcIndex];
+          const delay = options.delay || 500;
+          const duration = options.duration || 1500;
+          let ease;
+          if (options.ease == 'linear') {
+            ease = d3.easeLinear
+          }
+          else {
+            ease = d3.easeCubic
+          }
+          graphviz
+            .transition(() => d3.transition()
+                        .ease(ease)
+                        .delay(delay)
+                        .duration(duration));
           render();
         } else {
           running = false;
