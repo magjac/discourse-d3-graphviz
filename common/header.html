@@ -209,25 +209,29 @@
         dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
         visible = graphIsVisible();
         if (run && visible && (isEditorPreview || !editorPreviewIsOpen) && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
-          const options = optionsObjects[dotSrcIndex];
-          const delay = options.delay || 500;
-          const duration = options.duration || 1500;
-          let ease;
-          if (options.ease == 'linear') {
-            ease = d3.easeLinear
-          }
-          else {
-            ease = d3.easeCubic
-          }
-          graphviz
-            .transition(() => d3.transition()
-                        .ease(ease)
-                        .delay(delay)
-                        .duration(duration));
-          render();
+          renderNext();
         } else {
           running = false;
         }
+      }
+
+      function renderNext() {
+        const options = optionsObjects[dotSrcIndex];
+        const delay = options.delay || 500;
+        const duration = options.duration || 1500;
+        let ease;
+        if (options.ease == 'linear') {
+          ease = d3.easeLinear
+        }
+        else {
+          ease = d3.easeCubic
+        }
+        graphviz
+          .transition(() => d3.transition()
+                      .ease(ease)
+                      .delay(delay)
+                      .duration(duration));
+        render();
       }
 
       function startStop() {
