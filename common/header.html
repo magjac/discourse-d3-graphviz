@@ -5,6 +5,7 @@
   // For each post
   api.decorateCooked($elem => {
     const cookedDiv = $elem.get(0);
+    replyControl = d3.select('#reply-control').node();
     const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
     if (isEditorPreview) {
       editorPreviewIsOpen = true;
@@ -209,9 +210,20 @@
         dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
         visible = graphIsVisible();
         running = false;
-        if (run && visible && (isEditorPreview || !editorPreviewIsOpen) && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
-          running = true;
-          renderNext();
+        if (run && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
+          if (visible && (isEditorPreview || !editorPreviewIsOpen)) {
+            running = true;
+            renderNext();
+          } else {
+            const observer = new MutationObserver((mutations) => {
+              editorPreviewIsOpen = false;
+              visible = graphIsVisible();
+              if (visible) {
+                renderNext();
+              }
+            });
+            observer.observe(replyControl, {childList: true});
+          }
         }
       }
 
