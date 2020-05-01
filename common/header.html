@@ -142,9 +142,13 @@
           var svg = d3.select(this);
           if (svg.attr('xmlns') != null) {
             let widthAttr = datum.attributes.width;
-            let width = widthAttr.includes('pt') ? widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
+            let width = typeof widthAttr == 'string' && widthAttr.includes('pt') ?
+                widthAttr.replace('pt', '') * 4 / 3 :
+                +widthAttr;
             let heightAttr = datum.attributes.height;
-            let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
+            let height = typeof heightAttr == 'string' && heightAttr.includes('pt') ?
+                heightAttr.replace('pt', '') * 4 / 3 :
+                +heightAttr;
             if (width > minWidth) {
               minWidth = width;
             }
