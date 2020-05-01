@@ -118,7 +118,6 @@
         graphviz = graph.graphviz({useWorker: optionsObjects[0].useWorker})
           .options(optionsObjects[0])
           .attributer(attributer)
-          .fit(false)
           .on('end', done);
         return graphviz;
       }
