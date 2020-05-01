@@ -1,8 +1,14 @@
 <script type="text/discourse-plugin" version="0.8">
   const topBarHeight = 60; // FIXME: Determine this dynamically
   const graphs = [];
+  let editorPreviewIsOpen = false;
   // For each post
   api.decorateCooked($elem => {
+    const cookedDiv = $elem.get(0);
+    const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
+    if (isEditorPreview) {
+      editorPreviewIsOpen = true;
+    }
     const $paragraphs = $elem.children('p');
     // For each paragraph in post
     let partialParagraphText = '';
@@ -27,8 +33,8 @@
       initGraphviz();
       initVisibilityChangeHandler();
       if (dotSrcs.length > 1) {
+        run = !isEditorPreview;
         addControls();
-        run = true;
       }
 
       let dotSrcIndex = 0;
@@ -124,7 +130,7 @@
           .style('margin-top', '15px')
           .style('margin-bottom', '15px')
           .on('click', startStop)
-          .text('Stop');
+          .text(run ? 'Stop' : 'Start');
       }
 
       function attributer(datum, index, nodes) {
@@ -202,7 +208,7 @@
         }
         dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
         visible = graphIsVisible();
-        if (run && visible && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
+        if (run && visible && (isEditorPreview || !editorPreviewIsOpen) && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
           const options = optionsObjects[dotSrcIndex];
           const delay = options.delay || 500;
           const duration = options.duration || 1500;
