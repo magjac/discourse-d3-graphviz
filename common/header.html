@@ -131,6 +131,7 @@
         if (datum.tag == "svg") {
           const options = optionsObjects[dotSrcIndex];
           const border = options.border;
+          const style = options.style;
           var svg = d3.select(this);
           if (svg.attr('xmlns') != null) {
             let widthAttr = datum.attributes.width;
@@ -162,6 +163,7 @@
             const newViewBox = newViewBoxValues.join(' ');
 
             svg
+              .attr("style", style)
               .style("border", border)
               .attr("width", width)
               .attr("height", height)
@@ -171,7 +173,7 @@
             datum.attributes.height = minHeight;
             datum.attributes.viewBox = newViewBox;
           }
-          datum.attributes.style = 'border: ' + border;
+          datum.attributes.style = 'border: ' + border + ';' + style;
         }
       }
 
