@@ -9,6 +9,8 @@
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
       let dotSrcs;
+      let textBefore = '';
+      let textAfter = '';
       const optionsObjects = [];
       retrieveDotSources();
       if (dotSrcs.length == 0) {
@@ -39,7 +41,7 @@
       render();
 
       function retrieveDotSources() {
-        const text = partialParagraphText + paragraph.innerText;
+        let text = partialParagraphText + paragraph.innerText;
         partialParagraphText = '';
         dotSrcs = text.split('[dot')
           .slice(1)
@@ -79,13 +81,23 @@
             optionsObject.tweenPrecision = 1;
           }
           optionsObjects.push(optionsObject);
+          textBefore = textBefore + text.slice(0, text.indexOf('[dot'));
+          text = text.slice(text.indexOf('[/dot]') + '[/dot]'.length);
         }
+        textAfter = text;
         dotSrcs = dotSrcs
           .map(dotSrc => dotSrc.replace(/[^\]]*]/, '').replace('[/dot]', '').trim());
       }
 
       function createGraphArea() {
-        graph = d3.select(paragraph).append('div');
+        d3.select(paragraph).text('');
+        if (textBefore != '') {
+          d3.select(paragraph).append('span').text(textBefore);
+        }
+        graph = d3.select(paragraph).append('span');
+        if (textAfter != '') {
+          d3.select(paragraph).append('span').text(textAfter);
+        }
         const graphId = 'graph_' + paragraphIndex;
         graph.attr('id', graphId);
       }
