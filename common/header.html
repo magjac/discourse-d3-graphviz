@@ -100,6 +100,11 @@
         }
         const graphId = 'graph_' + paragraphIndex;
         graph.attr('id', graphId);
+        if (optionsObjects[0].verbose) {
+          graph
+            .append('code')
+              .text(dotSrcs.join('\n'));
+        }
       }
 
       function initGraphviz() {
