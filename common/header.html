@@ -86,7 +86,7 @@
         }
         textAfter = text;
         dotSrcs = dotSrcs
-          .map(dotSrc => dotSrc.replace(/[^\]]*]/, '').replace('[/dot]', '').trim());
+          .map(dotSrc => dotSrc.slice(0, dotSrc.indexOf('[/dot]')).replace(/[^\]]*]/, '').trim());
       }
 
       function createGraphArea() {
