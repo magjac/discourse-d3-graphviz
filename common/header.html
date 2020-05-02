@@ -1,6 +1,10 @@
 <script type="text/discourse-plugin" version="0.8">
   const topBarHeight = 60; // FIXME: Determine this dynamically
-  const graphs = [];
+  function GraphObject(dotSrcs) {
+    this.dotSrcs = dotSrcs
+    this.selection = null;
+  }
+  const graphObjects = [];
   let editorPreviewIsOpen = false;
   // For each post
   api.decorateCooked($elem => {
@@ -15,25 +19,24 @@
     let partialParagraphText = '';
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
-      let dotSrcs;
+      let graphObject;
       let textBefore = '';
       let textAfter = '';
       const optionsObjects = [];
-      retrieveDotSources();
-      if (dotSrcs.length == 0) {
+      retrieveGraphObject();
+      if (!graphObject) {
         return;
       }
 
-      let graph;
       let graphviz
       let startStopButton;
       let run = false;
       createGraphArea();
-      const graphIndex = graphs.length;
-      graphs.push(graph);
+      const graphIndex = graphObjects.length;
+      graphObjects.push(graphObject);
       initGraphviz();
       initVisibilityChangeHandler();
-      if (dotSrcs.length > 1) {
+      if (graphObject.dotSrcs.length > 1) {
         run = !isEditorPreview;
         addControls();
       }
@@ -47,14 +50,16 @@
 
       render();
 
-      function retrieveDotSources() {
+      function retrieveGraphObject() {
         let text = partialParagraphText + paragraph.innerText;
         partialParagraphText = '';
-        dotSrcs = text.split('[dot')
+        let dotSrcs = text.split('[dot')
           .slice(1)
+        if (dotSrcs.length == 0) {
+          return;
+        }
         if (dotSrcs.length > 0 && !dotSrcs[dotSrcs.length - 1].includes('[/dot]')) {
           partialParagraphText = text;
-          dotSrcs = [];
           return;
         }
         for (const dotSrc of dotSrcs) {
@@ -94,6 +99,7 @@
         textAfter = text;
         dotSrcs = dotSrcs
           .map(dotSrc => dotSrc.slice(0, dotSrc.indexOf('[/dot]')).replace(/[^\]]*]/, '').trim());
+        graphObject = new GraphObject(dotSrcs)
       }
 
       function createGraphArea() {
@@ -101,7 +107,7 @@
         if (textBefore != '') {
           d3.select(paragraph).append('span').text(textBefore);
         }
-        graph = d3.select(paragraph).append('span');
+        const graph = d3.select(paragraph).append('span');
         if (textAfter != '') {
           d3.select(paragraph).append('span').text(textAfter);
         }
@@ -110,12 +116,13 @@
         if (optionsObjects[0].verbose) {
           graph
             .append('code')
-              .text(dotSrcs.join('\n'));
+              .text(graphObject.dotSrcs.join('\n'));
         }
+        graphObject.selection = graph;
       }
 
       function initGraphviz() {
-        graphviz = graph.graphviz({useWorker: optionsObjects[0].useWorker})
+        graphviz = graphObject.selection.graphviz({useWorker: optionsObjects[0].useWorker})
           .options(optionsObjects[0])
           .attributer(attributer)
           .on('end', done);
@@ -123,7 +130,7 @@
       }
 
       function addControls() {
-        startStopButton = graph
+        startStopButton = graphObject.selection
           .append('div')
           .append('button')
           .attr('class', 'btn-primary')
@@ -190,8 +197,8 @@
       function render() {
         running = true;
         const options = optionsObjects[dotSrcIndex];
-        const dotSrc = dotSrcs[dotSrcIndex];
-        if (dotSrcIndex < dotSrcs.length) {
+        const dotSrc = graphObject.dotSrcs[dotSrcIndex];
+        if (dotSrcIndex < graphObject.dotSrcs.length) {
           graphviz
             .options(options)
             .renderDot(dotSrc);
@@ -199,7 +206,7 @@
       }
 
       function done() {
-        const svg = graph.selectAll('svg');
+        const svg = graphObject.selection.selectAll('svg');
         const widthAttr = svg.attr('width');
         const heightAttr = svg.attr('height');
         let width = widthAttr.includes('pt') ? width = widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
@@ -210,10 +217,10 @@
         if (height > minHeight) {
           minHeight = height;
         }
-        dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
+        dotSrcIndex = (dotSrcIndex + 1) % graphObject.dotSrcs.length;
         visible = graphIsVisible();
         running = false;
-        if (run && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
+        if (run && graphObject.dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
           if (visible && (isEditorPreview || !editorPreviewIsOpen)) {
             running = true;
             renderNext();
@@ -259,7 +266,7 @@
       }
 
       function graphIsVisible() {
-        const bounding = graph.node().getBoundingClientRect();
+        const bounding = graphObject.selection.node().getBoundingClientRect();
         if (document.hidden) {
           return false;
         }
@@ -277,8 +284,8 @@
             // It's the first graph
             return true;
           }
-          const prevGraph = graphs[graphIndex - 1];
-          const prevBounding = prevGraph.node().getBoundingClientRect();
+          const prevGraph = graphObjects[graphIndex - 1].selection.node();
+          const prevBounding = prevGraph.getBoundingClientRect();
           if (prevBounding.bottom > 0) {
             // The bottom of the previous graph is also visible
             return false;
@@ -287,12 +294,12 @@
         }
         else if (bounding.bottom >= topBarHeight && bounding.bottom <= window.innerHeight) {
           // The bottom of the graph is visible
-          if (graphIndex == graphs.length - 1) {
+          if (graphIndex == graphObjects.length - 1) {
             // It's the last graph
             return true;
           }
-          const nextGraph = graphs[graphIndex + 1];
-          const nextBounding = nextGraph.node().getBoundingClientRect();
+          const nextGraph = graphObjects[graphIndex + 1].selection.node();
+          const nextBounding = nextGraph.getBoundingClientRect();
           if (nextBounding.top <= window.innerHeight) {
             // The top of the next graph is also visible
             return false;
