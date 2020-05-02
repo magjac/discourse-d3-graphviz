@@ -5,6 +5,13 @@
       this.dotSrcs = dotSrcs;
       this.optionsObjects = optionsObjects;
       this.selection = null;
+      this.index = 0;
+    }
+    get dotSrc() {
+      return this.dotSrcs[this.index];
+    }
+    get options() {
+      return this.optionsObjects[this.index];
     }
   }
   const graphObjects = [];
@@ -43,7 +50,6 @@
         addControls();
       }
 
-      let dotSrcIndex = 0;
       let minWidth = 0;
       let minHeight = 0;
       let running = false;
@@ -145,7 +151,7 @@
 
       function attributer(datum, index, nodes) {
         if (datum.tag == "svg") {
-          const options = graphObject.optionsObjects[dotSrcIndex];
+          const options = graphObject.options;
           const border = options.border;
           const style = options.style;
           var svg = d3.select(this);
@@ -199,9 +205,9 @@
 
       function render() {
         running = true;
-        const options = graphObject.optionsObjects[dotSrcIndex];
-        const dotSrc = graphObject.dotSrcs[dotSrcIndex];
-        if (dotSrcIndex < graphObject.dotSrcs.length) {
+        const options = graphObject.options;
+        const dotSrc = graphObject.dotSrc;
+        if (graphObject.index < graphObject.dotSrcs.length) {
           graphviz
             .options(options)
             .renderDot(dotSrc);
@@ -220,10 +226,10 @@
         if (height > minHeight) {
           minHeight = height;
         }
-        dotSrcIndex = (dotSrcIndex + 1) % graphObject.dotSrcs.length;
+        graphObject.index = (graphObject.index + 1) % graphObject.dotSrcs.length;
         visible = graphIsVisible();
         running = false;
-        if (run && graphObject.dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
+        if (run && graphObject.dotSrcs.length > 1 && (graphObject.index > 0 || loop)) {
           if (visible && (isEditorPreview || !editorPreviewIsOpen)) {
             running = true;
             renderNext();
@@ -241,7 +247,7 @@
       }
 
       function renderNext() {
-        const options = graphObject.optionsObjects[dotSrcIndex];
+        const options = graphObject.options;
         const delay = options.delay || 500;
         const duration = options.duration || 1500;
         let ease;
