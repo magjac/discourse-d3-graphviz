@@ -1,7 +1,8 @@
 <script type="text/discourse-plugin" version="0.8">
   const topBarHeight = 60; // FIXME: Determine this dynamically
-  function GraphObject(dotSrcs) {
+  function GraphObject(dotSrcs, optionsObjects) {
     this.dotSrcs = dotSrcs
+    this.optionsObjects = optionsObjects;
     this.selection = null;
   }
   const graphObjects = [];
@@ -22,7 +23,6 @@
       let graphObject;
       let textBefore = '';
       let textAfter = '';
-      const optionsObjects = [];
       retrieveGraphObject();
       if (!graphObject) {
         return;
@@ -62,6 +62,7 @@
           partialParagraphText = text;
           return;
         }
+        const optionsObjects = [];
         for (const dotSrc of dotSrcs) {
           const optionsObject = Object.assign(
             {},
@@ -99,7 +100,7 @@
         textAfter = text;
         dotSrcs = dotSrcs
           .map(dotSrc => dotSrc.slice(0, dotSrc.indexOf('[/dot]')).replace(/[^\]]*]/, '').trim());
-        graphObject = new GraphObject(dotSrcs)
+        graphObject = new GraphObject(dotSrcs, optionsObjects)
       }
 
       function createGraphArea() {
@@ -113,7 +114,7 @@
         }
         const graphId = 'graph_' + paragraphIndex;
         graph.attr('id', graphId);
-        if (optionsObjects[0].verbose) {
+        if (graphObject.optionsObjects[0].verbose) {
           graph
             .append('code')
               .text(graphObject.dotSrcs.join('\n'));
@@ -122,8 +123,8 @@
       }
 
       function initGraphviz() {
-        graphviz = graphObject.selection.graphviz({useWorker: optionsObjects[0].useWorker})
-          .options(optionsObjects[0])
+        graphviz = graphObject.selection.graphviz({useWorker: graphObject.optionsObjects[0].useWorker})
+          .options(graphObject.optionsObjects[0])
           .attributer(attributer)
           .on('end', done);
         return graphviz;
@@ -142,7 +143,7 @@
 
       function attributer(datum, index, nodes) {
         if (datum.tag == "svg") {
-          const options = optionsObjects[dotSrcIndex];
+          const options = graphObject.optionsObjects[dotSrcIndex];
           const border = options.border;
           const style = options.style;
           var svg = d3.select(this);
@@ -196,7 +197,7 @@
 
       function render() {
         running = true;
-        const options = optionsObjects[dotSrcIndex];
+        const options = graphObject.optionsObjects[dotSrcIndex];
         const dotSrc = graphObject.dotSrcs[dotSrcIndex];
         if (dotSrcIndex < graphObject.dotSrcs.length) {
           graphviz
@@ -238,7 +239,7 @@
       }
 
       function renderNext() {
-        const options = optionsObjects[dotSrcIndex];
+        const options = graphObject.optionsObjects[dotSrcIndex];
         const delay = options.delay || 500;
         const duration = options.duration || 1500;
         let ease;
