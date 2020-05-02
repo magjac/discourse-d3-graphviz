@@ -4,9 +4,16 @@
     constructor(dotSrcs, optionsObjects) {
       this.dotSrcs = dotSrcs;
       this.optionsObjects = optionsObjects;
-      this.selection = null;
+      this._selection = null;
       this.index = 0;
     }
+    set selection(selection) {
+      this._selection = selection;
+      this.element = selection.node();
+    }
+    get selection() {
+      return this._selection;
+   }
     get dotSrc() {
       return this.dotSrcs[this.index];
     }
@@ -275,7 +282,7 @@
       }
 
       function graphIsVisible() {
-        const bounding = graphObject.selection.node().getBoundingClientRect();
+        const bounding = graphObject.element.getBoundingClientRect();
         if (document.hidden) {
           return false;
         }
@@ -293,7 +300,7 @@
             // It's the first graph
             return true;
           }
-          const prevGraph = graphObjects[graphIndex - 1].selection.node();
+          const prevGraph = graphObjects[graphIndex - 1].element;
           const prevBounding = prevGraph.getBoundingClientRect();
           if (prevBounding.bottom > 0) {
             // The bottom of the previous graph is also visible
@@ -307,7 +314,7 @@
             // It's the last graph
             return true;
           }
-          const nextGraph = graphObjects[graphIndex + 1].selection.node();
+          const nextGraph = graphObjects[graphIndex + 1].element;
           const nextBounding = nextGraph.getBoundingClientRect();
           if (nextBounding.top <= window.innerHeight) {
             // The top of the next graph is also visible
