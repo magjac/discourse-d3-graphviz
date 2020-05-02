@@ -131,40 +131,38 @@
       this.index = (this.index + 1) % this.dotSrcs.length;
       this.visible = this.isVisible();
       this.running = false;
-      if (this.run && this.dotSrcs.length > 1 && (this.index > 0 || this.loop)) {
+      if (this.dotSrcs.length > 1) {
+        const options = this.options;
+        const delay = options.delay || 500;
+        const duration = options.duration || 1500;
+        let ease;
+        if (options.ease == 'linear') {
+          ease = d3.easeLinear
+        }
+        else {
+          ease = d3.easeCubic
+        }
+        this.graphviz
+          .transition(() => d3.transition()
+                      .ease(ease)
+                      .delay(delay)
+                      .duration(duration));
+      }
+      if (this.run && (this.index > 0 || this.loop)) {
         const editorPreviewIsOpen = this.replyControl.classList.contains('open');
         if (this.visible && (this.isEditorPreview || !editorPreviewIsOpen)) {
           this.running = true;
-          this.renderNext();
+          this.render();
         } else {
           const observer = new MutationObserver((mutations) => {
             this.visible = this.isVisible();
             if (this.visible) {
-              this.renderNext();
+              this.render();
             }
           });
           observer.observe(this.replyControl, {childList: true});
         }
       }
-    }
-
-    renderNext() {
-      const options = this.options;
-      const delay = options.delay || 500;
-      const duration = options.duration || 1500;
-      let ease;
-      if (options.ease == 'linear') {
-        ease = d3.easeLinear
-      }
-      else {
-        ease = d3.easeCubic
-      }
-      this.graphviz
-        .transition(() => d3.transition()
-                    .ease(ease)
-                    .delay(delay)
-                    .duration(duration));
-      this.render();
     }
 
     startStop() {
