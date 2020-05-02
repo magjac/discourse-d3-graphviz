@@ -35,6 +35,18 @@
       return this.optionsObjects[this.index];
     }
 
+    init() {
+      this.initGraphviz();
+      this.initVisibilityChangeHandler();
+      if (this.dotSrcs.length > 1) {
+        this.run = !this.isEditorPreview;
+        this.addControls();
+      }
+      this.visible = this.isVisible();
+
+      this.render();
+    }
+
     initGraphviz() {
       this.graphviz = this._selection.graphviz({useWorker: this.options.useWorker})
         .options(this.options)
@@ -260,15 +272,7 @@
       graphObject.graphIndex = graphObjects.length;
       graphObjects.push(graphObject);
       graphObject.graphObjects = graphObjects;
-      graphObject.initGraphviz();
-      graphObject.initVisibilityChangeHandler();
-      if (graphObject.dotSrcs.length > 1) {
-        graphObject.run = !isEditorPreview;
-        graphObject.addControls();
-      }
-      graphObject.visible = graphObject.isVisible();
-
-      graphObject.render();
+      graphObject.init();
 
       function retrieveGraphObject() {
         let text = partialParagraphText + paragraph.innerText;
