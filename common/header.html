@@ -4,6 +4,8 @@
     constructor(dotSrcs, optionsObjects, isEditorPreview, replyControl) {
       this.dotSrcs = dotSrcs;
       this.optionsObjects = optionsObjects;
+      this.textBefore = '';
+      this.textAfter = '';
       this.isEditorPreview = isEditorPreview;
       this.replyControl = replyControl;
       this._selection = null;
@@ -157,7 +159,7 @@
           const observer = new MutationObserver((mutations) => {
             this.visible = this.isVisible();
             if (this.visible) {
-              this.render();
+              this.renderext();
             }
           });
           observer.observe(this.replyControl, {childList: true});
@@ -249,8 +251,6 @@
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
       let graphObject;
-      let textBefore = '';
-      let textAfter = '';
       retrieveGraphObject();
       if (!graphObject) {
         return;
@@ -272,6 +272,7 @@
 
       function retrieveGraphObject() {
         let text = partialParagraphText + paragraph.innerText;
+        let textBefore = '';
         partialParagraphText = '';
         let dotSrcs = text.split('[dot')
           .slice(1)
@@ -321,16 +322,18 @@
         dotSrcs = dotSrcs
           .map(dotSrc => dotSrc.slice(0, dotSrc.indexOf('[/dot]')).replace(/[^\]]*]/, '').trim());
         graphObject = new GraphObject(dotSrcs, optionsObjects, isEditorPreview, replyControl);
+        graphObject.textBefore = textBefore;
+        graphObject.textAfter = textAfter;
       }
 
       function createGraphArea() {
         d3.select(paragraph).text('');
-        if (textBefore != '') {
-          d3.select(paragraph).append('span').text(textBefore);
+        if (graphObject.textBefore != '') {
+          d3.select(paragraph).append('span').text(graphObject.textBefore);
         }
         const graph = d3.select(paragraph).append('span');
-        if (textAfter != '') {
-          d3.select(paragraph).append('span').text(textAfter);
+        if (graphObject.textAfter != '') {
+          d3.select(paragraph).append('span').text(graphObject.textAfter);
         }
         const graphId = 'graph_' + paragraphIndex;
         graph.attr('id', graphId);
