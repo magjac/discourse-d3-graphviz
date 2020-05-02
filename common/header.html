@@ -1,9 +1,11 @@
 <script type="text/discourse-plugin" version="0.8">
   const topBarHeight = 60; // FIXME: Determine this dynamically
-  function GraphObject(dotSrcs, optionsObjects) {
-    this.dotSrcs = dotSrcs
-    this.optionsObjects = optionsObjects;
-    this.selection = null;
+  class GraphObject {
+    constructor(dotSrcs, optionsObjects) {
+      this.dotSrcs = dotSrcs;
+      this.optionsObjects = optionsObjects;
+      this.selection = null;
+    }
   }
   const graphObjects = [];
   let editorPreviewIsOpen = false;
