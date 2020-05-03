@@ -307,6 +307,21 @@
           partialParagraphText = text;
           return;
         }
+        const optionsObjects = getOptionsObjects(dotSrcs);
+        for (const dotSrc of dotSrcs) {
+          textBefore = textBefore + text.slice(0, text.indexOf('[dot'));
+          text = text.slice(text.indexOf('[/dot]') + '[/dot]'.length);
+        }
+        textAfter = text;
+        dotSrcs = dotSrcs
+          .map(dotSrc => dotSrc.slice(0, dotSrc.indexOf('[/dot]')).replace(/[^\]]*]/, '').trim());
+        graphObject = new GraphObject(dotSrcs, optionsObjects, isEditorPreview, replyControl);
+        graphObject.paragraph = paragraph;
+        graphObject.textBefore = textBefore;
+        graphObject.textAfter = textAfter;
+      }
+
+      function getOptionsObjects(dotSrcs) {
         const optionsObjects = [];
         for (const dotSrc of dotSrcs) {
           const optionsObject = Object.assign(
@@ -339,16 +354,8 @@
             optionsObject.tweenPrecision = 1;
           }
           optionsObjects.push(optionsObject);
-          textBefore = textBefore + text.slice(0, text.indexOf('[dot'));
-          text = text.slice(text.indexOf('[/dot]') + '[/dot]'.length);
         }
-        textAfter = text;
-        dotSrcs = dotSrcs
-          .map(dotSrc => dotSrc.slice(0, dotSrc.indexOf('[/dot]')).replace(/[^\]]*]/, '').trim());
-        graphObject = new GraphObject(dotSrcs, optionsObjects, isEditorPreview, replyControl);
-        graphObject.paragraph = paragraph;
-        graphObject.textBefore = textBefore;
-        graphObject.textAfter = textAfter;
+        return optionsObjects;
       }
 
     });
