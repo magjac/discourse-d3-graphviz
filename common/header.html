@@ -50,18 +50,21 @@
     }
 
     replaceHTML() {
-      d3.select(this.paragraph).text('');
       if (this.textBefore != '') {
-        d3.select(this.paragraph).append('span').text(this.textBefore);
+        d3.select(this.paragraph).insert('span', () => this.nextElement)
+          .text(this.textBefore);
       }
-      const graph = d3.select(this.paragraph).append('span');
+      const graph = d3.select(this.paragraph).insert('span', () => this.nextElement);
       if (this.textAfter != '') {
-        d3.select(this.paragraph).append('span').text(this.textAfter);
+        d3.select(this.paragraph).insert('span', () => this.nextElement)
+          .text(this.textAfter);
       }
+      d3.selectAll(this.dotBBCodeElements).remove();
       const graphId = 'graph_' + this.graphIndex;
       graph.attr('id', graphId);
       if (this.optionsObjects[0].verbose) {
         graph
+          .append('pre')
           .append('code')
           .text(this.dotSrcs.join('\n'));
       }
@@ -280,47 +283,117 @@
     const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
     const $paragraphs = $elem.children('p');
     // For each paragraph in post
+    let withinBlock = false;
+    let atBlockStart = false;
     let partialParagraphText = '';
+    let partialDotBBCodes = [];
+    let partialDotBBCode = '';
+    let partialBlockElements = [];
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
       retrieveGraphObject();
 
       function retrieveGraphObject() {
-        let text = partialParagraphText + paragraph.innerText;
-        let textBefore = '';
-        partialParagraphText = '';
-        let dotSrcs = text.split('[dot')
-          .slice(1)
-        if (dotSrcs.length == 0) {
-          return;
-        }
-        if (dotSrcs.length > 0 && !dotSrcs[dotSrcs.length - 1].includes('[/dot]')) {
-          partialParagraphText = text;
-          return;
-        }
-        const optionsObjects = getOptionsObjects(dotSrcs);
-        for (const dotSrc of dotSrcs) {
-          textBefore = textBefore + text.slice(0, text.indexOf('[dot'));
-          text = text.slice(text.indexOf('[/dot]') + '[/dot]'.length);
-        }
-        textAfter = text;
-        dotSrcs = dotSrcs
-          .map(dotSrc => dotSrc.slice(0, dotSrc.indexOf('[/dot]')).replace(/[^\]]*]/, '').trim());
-        graphObject = new GraphObject(dotSrcs, optionsObjects, isEditorPreview, replyControl);
-        graphObject.paragraph = paragraph;
-        graphObject.textBefore = textBefore;
-        graphObject.textAfter = textAfter;
-        insertGraphObject(graphObject);
+        const graphObjectsToInsert = [];
+        [...paragraph.childNodes].forEach(childNode => {
+          const str = childNode.nodeValue;
+          if (withinBlock) {
+            partialBlockElements.push(childNode);
+            if (childNode.nodeName == '#text') {
+              if (atBlockStart) {
+                partialDotBBCode += str.slice(1);
+                atBlockStart = false;
+              }
+              else {
+                partialDotBBCode += str;
+              }
+              if (str.match(/^\s*\[\/dot\] *$/)) {
+                partialDotBBCodes.push(partialDotBBCode);
+                partialDotBBCode = '';
+                withinBlock = false;
+              }
+            }
+          }
+          else if (!withinBlock && childNode.nodeName == '#text') {
+            let dotBBCodeElements = [childNode];
+            let nextElement = childNode.nextSibling;
+            let dotBBCodes = [];
+            let textBefore = '';
+            let textAfter = '';
+            const re = /(\[dot[^\]]*\].*?\[\/dot\])/g;
+            let lastIndex = 0;
+            while ((result = re.exec(str)) !== null) {
+              const prevTextBefore = textBefore;
+              textBefore = str.slice(lastIndex, result.index);
+              if (textBefore != '' && dotBBCodes.length > 0) {
+                graphObjectsToInsert.push(createGraphObject(
+                  prevTextBefore, dotBBCodes, '', paragraph, [childNode], nextElement
+                ));
+                dotBBCodes = [];
+                dotBBCodeElements = [];
+              }
+              dotBBCodes.push(result[0]);
+              textAfter = str.slice(re.lastIndex);
+              lastIndex = re.lastIndex;
+            }
+            if (dotBBCodes.length > 0) {
+              graphObjectsToInsert.push(createGraphObject(
+                textBefore, dotBBCodes, textAfter, paragraph, dotBBCodeElements, nextElement
+              ));
+            }
+            else if (str.match(/^\s*\[dot[^\]]*\] *$/)) {
+              withinBlock = true;
+              atBlockStart = true;
+              partialDotBBCode = str;
+              partialBlockElements.push(childNode);
+            }
+          }
+          if (!withinBlock && partialDotBBCodes.length > 0) {
+            graphObjectsToInsert.push(createGraphObject(
+              '', partialDotBBCodes, '', paragraph, partialBlockElements, childNode
+            ));
+            partialDotBBCodes = [];
+            partialDotBBCode = '';
+            partialBlockElements = [];
+          }
+        });
+        if (withinBlock) {
+          if (atBlockStart) {
+            partialDotBBCode += '\n'
+            atBlockStart = false;
+          }
+          else {
+            partialDotBBCode += '\n\n'
+          }
+        };
+        graphObjectsToInsert.forEach(graphObject => insertGraphObject(graphObject));
       }
 
-      function getOptionsObjects(dotSrcs) {
+      function createGraphObject(textBefore, dotBBCodes, textAfter,
+                                 paragraph, dotBBCodeElements, nextElement) {
+        const dotSrcs = dotBBCodes.map(
+          dotBBcode => dotBBcode
+            .slice(0, dotBBcode.indexOf('[/dot]')).replace(/[^\]]*]/, '')
+        );
+        const optionsObjects = getOptionsObjects(dotBBCodes);
+        graphObject = new GraphObject(
+          dotSrcs, optionsObjects, isEditorPreview, replyControl);
+        graphObject.textBefore = textBefore;
+        graphObject.textAfter = textAfter;
+        graphObject.paragraph = paragraph;
+        graphObject.dotBBCodeElements = dotBBCodeElements;
+        graphObject.nextElement = nextElement;
+        return (graphObject);
+      }
+
+      function getOptionsObjects(dotBBCodes) {
         const optionsObjects = [];
-        for (const dotSrc of dotSrcs) {
+        for (const dotBBCode of dotBBCodes) {
           const optionsObject = Object.assign(
             {},
             optionsObjects.length == 0 ? {useWorker: true} : optionsObjects[optionsObjects.length - 1]
           );
-          attributes=dotSrc.split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
+          attributes=dotBBCode.split('[dot')[1].split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
           for (attribute of attributes) {
             const [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
             if (value == 'true') {
