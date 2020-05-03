@@ -283,16 +283,7 @@
     let partialParagraphText = '';
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
-      let graphObject;
       retrieveGraphObject();
-      if (!graphObject) {
-        return;
-      }
-
-      graphObject.graphIndex = graphObjects.length;
-      graphObjects.push(graphObject);
-      graphObject.graphObjects = graphObjects;
-      graphObject.init();
 
       function retrieveGraphObject() {
         let text = partialParagraphText + paragraph.innerText;
@@ -319,6 +310,7 @@
         graphObject.paragraph = paragraph;
         graphObject.textBefore = textBefore;
         graphObject.textAfter = textAfter;
+        insertGraphObject(graphObject);
       }
 
       function getOptionsObjects(dotSrcs) {
@@ -356,6 +348,13 @@
           optionsObjects.push(optionsObject);
         }
         return optionsObjects;
+      }
+
+      function insertGraphObject(graphObject) {
+        graphObject.graphIndex = graphObjects.length;
+        graphObjects.push(graphObject);
+        graphObject.graphObjects = graphObjects;
+        graphObject.init();
       }
 
     });
