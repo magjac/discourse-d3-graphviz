@@ -75,6 +75,7 @@
       this.graphviz = this._selection.graphviz({useWorker: this.options.useWorker})
         .options(this.options)
         .attributer(attributer)
+        .onerror(this.handleError.bind(this))
         .on('end', this.done.bind(this));
 
       const graphObject = this;
@@ -201,6 +202,32 @@
           observer.observe(this.replyControl, {childList: true});
         }
       }
+    }
+
+    handleError(errorMessage) {
+      let line = errorMessage.replace(/.*error in line ([0-9]*) .*\n/, '$1');
+      let designation = '';
+      if (this.dotSrcs.length > 1) {
+        designation = ' in ';
+        if (this.index == 0) {
+          designation = designation + '1st ';
+        }
+        else if (this.index == 1) {
+          designation = designation + '2nd ';
+        }
+        else if (this.index == 2) {
+          designation = designation + '3rd ';
+        }
+        else {
+          designation = designation + (this.index + 1) + 'th ';
+        }
+        designation = designation + 'graph';
+      }
+      this.selection
+        .append('div')
+          .attr('id', 'graphviz-error')
+          .text(errorMessage + designation)
+          .style('color', 'red');
     }
 
     startStop() {
