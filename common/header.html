@@ -309,6 +309,7 @@
     const replyControl = d3.select('#reply-control').node();
     const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
     const $paragraphs = $elem.children('p,pre');
+    const graphObjectsToInsert = [];
     // For each paragraph in post
     let withinBlock = false;
     let atBlockStart = false;
@@ -336,7 +337,6 @@
         else if (element.nodeName == 'PRE') {
           atBlockStart = false;
         }
-        const graphObjectsToInsert = [];
         [...element.childNodes].forEach(childNode => {
           if (childNode.nodeName != '#text' && childNode.nodeName != 'BR') {
             retrieveGraphObject(rootElement, childNode);
@@ -402,7 +402,6 @@
             partialBlockElements = [];
           }
         });
-        graphObjectsToInsert.forEach(graphObject => insertGraphObject(graphObject));
         prevElementNodeName = element.nodeName;
       }
 
@@ -460,18 +459,19 @@
         return optionsObjects;
       }
 
-      function insertGraphObject(graphObject) {
-        graphObject.graphIndex = graphObjects.length;
-        graphObjects.push(graphObject);
-        graphObject.graphObjects = graphObjects;
-        graphObject.init();
-      }
-
     });
+    graphObjectsToInsert.forEach(graphObject => insertGraphObject(graphObject));
   },
   {
     id: "dot",
   },
   );
+
+  function insertGraphObject(graphObject) {
+    graphObject.graphIndex = graphObjects.length;
+    graphObjects.push(graphObject);
+    graphObject.graphObjects = graphObjects;
+    graphObject.init();
+  }
 
 </script>
