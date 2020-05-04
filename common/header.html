@@ -1,8 +1,15 @@
 <script type="text/discourse-plugin" version="0.8">
   const topBarHeight = 60; // FIXME: Determine this dynamically
   const graphs = [];
+  let editorPreviewIsOpen = false;
   // For each post
   api.decorateCooked($elem => {
+    const cookedDiv = $elem.get(0);
+    replyControl = d3.select('#reply-control').node();
+    const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
+    if (isEditorPreview) {
+      editorPreviewIsOpen = true;
+    }
     const $paragraphs = $elem.children('p');
     // For each paragraph in post
     let partialParagraphText = '';
@@ -27,8 +34,8 @@
       initGraphviz();
       initVisibilityChangeHandler();
       if (dotSrcs.length > 1) {
+        run = !isEditorPreview;
         addControls();
-        run = true;
       }
 
       let dotSrcIndex = 0;
@@ -124,7 +131,7 @@
           .style('margin-top', '15px')
           .style('margin-bottom', '15px')
           .on('click', startStop)
-          .text('Stop');
+          .text(run ? 'Stop' : 'Start');
       }
 
       function attributer(datum, index, nodes) {
@@ -135,9 +142,13 @@
           var svg = d3.select(this);
           if (svg.attr('xmlns') != null) {
             let widthAttr = datum.attributes.width;
-            let width = widthAttr.includes('pt') ? widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
+            let width = typeof widthAttr == 'string' && widthAttr.includes('pt') ?
+                widthAttr.replace('pt', '') * 4 / 3 :
+                +widthAttr;
             let heightAttr = datum.attributes.height;
-            let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
+            let height = typeof heightAttr == 'string' && heightAttr.includes('pt') ?
+                heightAttr.replace('pt', '') * 4 / 3 :
+                +heightAttr;
             if (width > minWidth) {
               minWidth = width;
             }
@@ -202,26 +213,41 @@
         }
         dotSrcIndex = (dotSrcIndex + 1) % dotSrcs.length;
         visible = graphIsVisible();
-        if (run && visible && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
-          const options = optionsObjects[dotSrcIndex];
-          const delay = options.delay || 500;
-          const duration = options.duration || 1500;
-          let ease;
-          if (options.ease == 'linear') {
-            ease = d3.easeLinear
+        running = false;
+        if (run && dotSrcs.length > 1 && (dotSrcIndex > 0 || loop)) {
+          if (visible && (isEditorPreview || !editorPreviewIsOpen)) {
+            running = true;
+            renderNext();
+          } else {
+            const observer = new MutationObserver((mutations) => {
+              editorPreviewIsOpen = false;
+              visible = graphIsVisible();
+              if (visible) {
+                renderNext();
+              }
+            });
+            observer.observe(replyControl, {childList: true});
           }
-          else {
-            ease = d3.easeCubic
-          }
-          graphviz
-            .transition(() => d3.transition()
-                        .ease(ease)
-                        .delay(delay)
-                        .duration(duration));
-          render();
-        } else {
-          running = false;
         }
+      }
+
+      function renderNext() {
+        const options = optionsObjects[dotSrcIndex];
+        const delay = options.delay || 500;
+        const duration = options.duration || 1500;
+        let ease;
+        if (options.ease == 'linear') {
+          ease = d3.easeLinear
+        }
+        else {
+          ease = d3.easeCubic
+        }
+        graphviz
+          .transition(() => d3.transition()
+                      .ease(ease)
+                      .delay(delay)
+                      .duration(duration));
+        render();
       }
 
       function startStop() {
