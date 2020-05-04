@@ -9,6 +9,8 @@
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
       let dotSrcs;
+      let textBefore = '';
+      let textAfter = '';
       const optionsObjects = [];
       retrieveDotSources();
       if (dotSrcs.length == 0) {
@@ -39,13 +41,13 @@
       render();
 
       function retrieveDotSources() {
-        const text = partialParagraphText + paragraph.innerText;
+        let text = partialParagraphText + paragraph.innerText;
         partialParagraphText = '';
         dotSrcs = text.split('[dot')
           .slice(1)
         if (dotSrcs.length > 0 && !dotSrcs[dotSrcs.length - 1].includes('[/dot]')) {
           partialParagraphText = text;
-          dotSrcs = []
+          dotSrcs = [];
           return;
         }
         for (const dotSrc of dotSrcs) {
@@ -79,15 +81,30 @@
             optionsObject.tweenPrecision = 1;
           }
           optionsObjects.push(optionsObject);
+          textBefore = textBefore + text.slice(0, text.indexOf('[dot'));
+          text = text.slice(text.indexOf('[/dot]') + '[/dot]'.length);
         }
+        textAfter = text;
         dotSrcs = dotSrcs
-          .map(dotSrc => dotSrc.replace(/[^\]]*]/, '').replace('[/dot]', '').trim());
+          .map(dotSrc => dotSrc.slice(0, dotSrc.indexOf('[/dot]')).replace(/[^\]]*]/, '').trim());
       }
 
       function createGraphArea() {
-        graph = d3.select(paragraph).append('div');
+        d3.select(paragraph).text('');
+        if (textBefore != '') {
+          d3.select(paragraph).append('span').text(textBefore);
+        }
+        graph = d3.select(paragraph).append('span');
+        if (textAfter != '') {
+          d3.select(paragraph).append('span').text(textAfter);
+        }
         const graphId = 'graph_' + paragraphIndex;
         graph.attr('id', graphId);
+        if (optionsObjects[0].verbose) {
+          graph
+            .append('code')
+              .text(dotSrcs.join('\n'));
+        }
       }
 
       function initGraphviz() {
@@ -114,6 +131,7 @@
         if (datum.tag == "svg") {
           const options = optionsObjects[dotSrcIndex];
           const border = options.border;
+          const style = options.style;
           var svg = d3.select(this);
           if (svg.attr('xmlns') != null) {
             let widthAttr = datum.attributes.width;
@@ -145,7 +163,8 @@
             const newViewBox = newViewBoxValues.join(' ');
 
             svg
-              .attr("border", border)
+              .attr("style", style)
+              .style("border", border)
               .attr("width", width)
               .attr("height", height)
               .attr("viewBox", viewBox);
@@ -154,7 +173,7 @@
             datum.attributes.height = minHeight;
             datum.attributes.viewBox = newViewBox;
           }
-          datum.attributes.style = 'border: ' + border;
+          datum.attributes.style = 'border: ' + border + ';' + style;
         }
       }
 
