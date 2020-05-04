@@ -281,21 +281,39 @@
     const cookedDiv = $elem.get(0);
     const replyControl = d3.select('#reply-control').node();
     const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
-    const $paragraphs = $elem.children('p');
+    const $paragraphs = $elem.children('p,pre');
     // For each paragraph in post
     let withinBlock = false;
     let atBlockStart = false;
+    let prevElementNodeName;
     let partialParagraphText = '';
     let partialDotBBCodes = [];
     let partialDotBBCode = '';
     let partialBlockElements = [];
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
-      retrieveGraphObject();
+      retrieveGraphObject(paragraph, paragraph);
 
-      function retrieveGraphObject() {
+      function retrieveGraphObject(rootElement, element) {
+        if (element.nodeName == 'P' && prevElementNodeName == 'P') {
+          if (withinBlock) {
+            if (atBlockStart) {
+              partialDotBBCode += '\n'
+              atBlockStart = false;
+            }
+            else {
+              partialDotBBCode += '\n\n'
+            }
+          }
+        }
+        else if (element.nodeName == 'PRE') {
+          atBlockStart = false;
+        }
         const graphObjectsToInsert = [];
-        [...paragraph.childNodes].forEach(childNode => {
+        [...element.childNodes].forEach(childNode => {
+          if (childNode.nodeName != '#text' && childNode.nodeName != 'BR') {
+            retrieveGraphObject(rootElement, childNode);
+          }
           const str = childNode.nodeValue;
           if (withinBlock) {
             partialBlockElements.push(childNode);
@@ -327,7 +345,7 @@
               textBefore = str.slice(lastIndex, result.index);
               if (textBefore != '' && dotBBCodes.length > 0) {
                 graphObjectsToInsert.push(createGraphObject(
-                  prevTextBefore, dotBBCodes, '', paragraph, [childNode], nextElement
+                  prevTextBefore, dotBBCodes, '', rootElement, [childNode], nextElement
                 ));
                 dotBBCodes = [];
                 dotBBCodeElements = [];
@@ -338,7 +356,7 @@
             }
             if (dotBBCodes.length > 0) {
               graphObjectsToInsert.push(createGraphObject(
-                textBefore, dotBBCodes, textAfter, paragraph, dotBBCodeElements, nextElement
+                textBefore, dotBBCodes, textAfter, rootElement, dotBBCodeElements, nextElement
               ));
             }
             else if (str.match(/^\s*\[dot[^\]]*\] *$/)) {
@@ -350,23 +368,15 @@
           }
           if (!withinBlock && partialDotBBCodes.length > 0) {
             graphObjectsToInsert.push(createGraphObject(
-              '', partialDotBBCodes, '', paragraph, partialBlockElements, childNode
+              '', partialDotBBCodes, '', rootElement, partialBlockElements, childNode
             ));
             partialDotBBCodes = [];
             partialDotBBCode = '';
             partialBlockElements = [];
           }
         });
-        if (withinBlock) {
-          if (atBlockStart) {
-            partialDotBBCode += '\n'
-            atBlockStart = false;
-          }
-          else {
-            partialDotBBCode += '\n\n'
-          }
-        };
         graphObjectsToInsert.forEach(graphObject => insertGraphObject(graphObject));
+        prevElementNodeName = element.nodeName;
       }
 
       function createGraphObject(textBefore, dotBBCodes, textAfter,
