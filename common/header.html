@@ -57,6 +57,7 @@
       const graphId = 'graphviz_' + this.graphIndex;
       const graph = d3.select(this.paragraph)
             .insert('span', () => this.nextElement)
+              .classed('graphviz-container', true)
               .attr('id', graphId);
 
       if (this.textAfter != '') {
