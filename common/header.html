@@ -54,14 +54,16 @@
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textBefore);
       }
-      const graph = d3.select(this.paragraph).insert('span', () => this.nextElement);
+      const graphId = 'graph_' + this.graphIndex;
+      const graph = d3.select(this.paragraph)
+            .insert('span', () => this.nextElement)
+              .attr('id', graphId);
+
       if (this.textAfter != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textAfter);
       }
       d3.selectAll(this.dotBBCodeElements).remove();
-      const graphId = 'graph_' + this.graphIndex;
-      graph.attr('id', graphId);
       if (this.optionsObjects[0].verbose) {
         graph
           .append('pre')
