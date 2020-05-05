@@ -6,7 +6,7 @@ Cypress.Commands.add("findParagraphs", {prevSubject: true}, (subject, index) => 
   return cy.wrap(subject).find('> p');
 });
 
-Cypress.Commands.add("findGraphContainers", {prevSubject: true}, (subject, index) => {
+Cypress.Commands.add("findGraphvizContainers", {prevSubject: true}, (subject, index) => {
   return cy.wrap(subject).find('> span.graphviz-container');
 });
 
