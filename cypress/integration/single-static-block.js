@@ -7,6 +7,9 @@ describe('Block rendering', () => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).findParagraphs().then(paragraphs => {
         cy.wrap(paragraphs).should('have.length', 1);
+        cy.wrap(paragraphs).findSpans().then(spans => {
+          cy.wrap(spans).should('have.length', 1);
+        });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {
           cy.wrap(graphvizContainers).should('have.length', 1);
           cy.wrap(graphvizContainers).findGraph().then(graph => {
