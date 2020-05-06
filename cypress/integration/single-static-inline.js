@@ -5,12 +5,12 @@ describe('Inline rendering', () => {
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
-      cy.wrap(cooked).invoke('text').then(text => text.replace(/\n/g, ''))
-        .should('eq', 'aabba->b');
       cy.wrap(cooked).findParagraphs().then(paragraphs => {
         cy.wrap(paragraphs).should('have.length', 1);
         cy.wrap(paragraphs).findSpans().then(spans => {
           cy.wrap(spans).should('have.length', 1);
+          cy.wrap(spans).eq(0).invoke('text').then(text => text.replace(/\n/g, ''))
+            .should('eq', 'aabba->b');
         });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {
           cy.wrap(graphvizContainers).should('have.length', 1);

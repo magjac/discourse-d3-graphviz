@@ -5,16 +5,14 @@ describe('Inline rendering', () => {
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
-      cy.wrap(cooked).invoke('text').then(text => text.replace(/\n/g, ''))
-        .should('eq',
-                'This is a graph: ' +
-                'aabba->b' +
-                '. That was a graph.'
-               );
       cy.wrap(cooked).findParagraphs().then(paragraphs => {
         cy.wrap(paragraphs).should('have.length', 1);
         cy.wrap(paragraphs).findSpans().then(spans => {
           cy.wrap(spans).should('have.length', 3);
+          cy.wrap(spans).eq(0).should('have.text', 'This is a graph: ');
+          cy.wrap(spans).eq(1).invoke('text').then(text => text.replace(/\n/g, ''))
+            .should('eq', 'aabba->b');
+          cy.wrap(spans).eq(2).should('have.text', '. That was a graph.');
         });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {
           cy.wrap(graphvizContainers).should('have.length', 1);
