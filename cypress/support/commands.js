@@ -14,6 +14,10 @@ Cypress.Commands.add("findGraphvizContainers", {prevSubject: true}, (subject, in
   return cy.wrap(subject).find('> span.graphviz-container');
 });
 
+Cypress.Commands.add("findCode", {prevSubject: true}, (subject, index) => {
+  return cy.wrap(subject).find('> pre > code');
+});
+
 Cypress.Commands.add("findGraph", {prevSubject: true}, (subject, index) => {
   return cy.wrap(subject).find('> svg');
 });
