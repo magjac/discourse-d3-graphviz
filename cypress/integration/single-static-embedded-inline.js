@@ -1,7 +1,7 @@
 describe('Inline rendering', () => {
 
   it('renders single static graph embedded in text inline', () => {
-    cy.visit('http://localhost:3000/t/single-static-block/35');
+    cy.visit('http://localhost:3000/t/single-embedded-static-inline/35');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');

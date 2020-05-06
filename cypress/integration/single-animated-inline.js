@@ -1,7 +1,7 @@
 describe('Inline rendering', () => {
 
   it('renders single animated graph inline', () => {
-    cy.visit('http://localhost:3000/t/single-static-inline/34');
+    cy.visit('http://localhost:3000/t/single-animated-inline/34');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
