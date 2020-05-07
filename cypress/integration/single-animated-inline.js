@@ -1,5 +1,9 @@
 describe('Inline rendering', () => {
 
+  afterEach(() => {
+    cy.getStartStopButtons().click({multiple: true });
+  })
+
   it('renders single animated graph inline', () => {
     cy.visit('http://localhost:3000/t/single-animated-inline/34');
     cy.getCooked().then(cooked => {

@@ -1,5 +1,9 @@
 describe('Block rendering', () => {
 
+  afterEach(() => {
+    cy.getStartStopButtons().click({multiple: true });
+  })
+
   it('renders single animated graph block', () => {
     cy.visit('http://localhost:3000/t/single-animated-block/44');
     cy.getCooked().then(cooked => {

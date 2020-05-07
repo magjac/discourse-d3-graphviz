@@ -1,5 +1,9 @@
 describe('Inline rendering', () => {
 
+  afterEach(() => {
+    cy.getStartStopButtons().click({multiple: true });
+  })
+
   it('renders multiple animated graphs inline', () => {
     const spanTexts = [
       'Second line: ' +

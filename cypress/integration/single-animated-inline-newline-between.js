@@ -1,5 +1,9 @@
 describe('Inline rendering', () => {
 
+  afterEach(() => {
+    cy.getStartStopButtons().click({multiple: true });
+  })
+
   it('renders single animated graph inline with newline between the two DOT BBCodes', () => {
     cy.visit('http://localhost:3000/t/single-animated-inline-on-separate-lines/50');
     cy.getCooked().then(cooked => {
