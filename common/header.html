@@ -305,6 +305,100 @@
 
   }
 
+  class GraphObjectBuffer {
+
+    constructor(graphObjectsToInsert, isEditorPreview, replyControl) {
+      this.graphObjectsToInsert = graphObjectsToInsert;
+      this.isEditorPreview = isEditorPreview;
+      this.replyControl = replyControl;
+      this.clear()
+    }
+
+    clear() {
+      this.textBefore = '';
+      this.dotBBCodes = [];
+      this.textAfter = '';
+      this.paragraph = null;
+      this.dotBBCodeElements = [];
+      this.nextElement = null;
+    }
+
+    add(textBefore, dotBBCodes, textAfter, paragraph, dotBBCodeElements, nextElement) {
+      if (!textBefore.match(/^\s*$/)) {
+        this.flush();
+      }
+      this.textBefore = textBefore;
+      this.dotBBCodes.push(...dotBBCodes);
+      this.textAfter = textAfter;
+      this.paragraph = this.paragraph || paragraph;
+      this.dotBBCodeElements.push(...dotBBCodeElements);
+      this.nextElement = this.nextElement || nextElement;
+      if (!textAfter.match(/^\s*$/)) {
+        this.flush();
+      }
+    }
+
+    flush() {
+      if (this.dotBBCodes.length > 0) {
+        this.graphObjectsToInsert.push(this.createGraphObject());
+        this.clear()
+      }
+    }
+
+    createGraphObject() {
+      const dotSrcs = this.dotBBCodes.map(
+        dotBBcode => dotBBcode
+          .slice(0, dotBBcode.indexOf('[/dot]')).replace(/[^\]]*]/, '')
+      );
+      const optionsObjects = this.getOptionsObjects();
+      const graphObject = new GraphObject(
+        dotSrcs, optionsObjects, this.isEditorPreview, this.replyControl);
+      graphObject.textBefore = this.textBefore;
+      graphObject.textAfter = this.textAfter;
+      graphObject.paragraph = this.paragraph;
+      graphObject.dotBBCodeElements = this.dotBBCodeElements;
+      graphObject.nextElement = this.nextElement;
+      return (graphObject);
+    }
+
+    getOptionsObjects() {
+      const optionsObjects = [];
+      for (const dotBBCode of this.dotBBCodes) {
+        const optionsObject = Object.assign(
+          {},
+          optionsObjects.length == 0 ? {useWorker: true} : optionsObjects[optionsObjects.length - 1]
+        );
+        attributes=dotBBCode.split('[dot')[1].split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
+        for (attribute of attributes) {
+          const [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
+          if (value == 'true') {
+            value = true;
+          }
+          else if (value == 'false') {
+            value = false;
+          }
+          else if (!isNaN(value)) {
+            value = Number(value);
+          }
+          else if (value[0] == '(') {
+            if (value[1] == '(') {
+              value = value.slice(2, -2).split('),(').map(a => a.split(',').map(v => Number(v)));
+            }
+            else {
+              value = value.slice(1, -1).split(',').map(v => Number(v))
+            }
+          }
+          optionsObject[name] = value;
+        }
+        if (optionsObject.hasOwnProperty('tweenPrecision') && optionsObject.tweenPrecision < 1) {
+          optionsObject.tweenPrecision = 1;
+        }
+        optionsObjects.push(optionsObject);
+      }
+      return optionsObjects;
+    }
+  }
+
   const graphObjects = [];
   // For each post
   api.decorateCooked($elem => {
@@ -313,6 +407,9 @@
     const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
     const $paragraphs = $elem.children('p,pre');
     const graphObjectsToInsert = [];
+    const graphObjectBuffer = new GraphObjectBuffer(
+      graphObjectsToInsert, isEditorPreview, replyControl
+    );
     // For each paragraph in post
     let withinBlock = false;
     let atBlockStart = false;
@@ -374,9 +471,9 @@
               const prevTextBefore = textBefore;
               textBefore = str.slice(lastIndex, result.index);
               if (textBefore != '' && dotBBCodes.length > 0) {
-                graphObjectsToInsert.push(createGraphObject(
+                graphObjectBuffer.add(
                   prevTextBefore, dotBBCodes, '', rootElement, [childNode], nextElement
-                ));
+                );
                 dotBBCodes = [];
                 dotBBCodeElements = [];
               }
@@ -385,9 +482,9 @@
               lastIndex = re.lastIndex;
             }
             if (dotBBCodes.length > 0) {
-              graphObjectsToInsert.push(createGraphObject(
+              graphObjectBuffer.add(
                 textBefore, dotBBCodes, textAfter, rootElement, dotBBCodeElements, nextElement
-              ));
+              );
             }
             else if (str.match(/^\s*\[dot[^\]]*\] *$/)) {
               withinBlock = true;
@@ -397,9 +494,9 @@
             }
           }
           if (!withinBlock && partialDotBBCodes.length > 0) {
-            graphObjectsToInsert.push(createGraphObject(
+            graphObjectBuffer.add(
               '', partialDotBBCodes, '', rootElement, partialBlockElements, childNode
-            ));
+            );
             partialDotBBCodes = [];
             partialDotBBCode = '';
             partialBlockElements = [];
@@ -407,62 +504,12 @@
         });
         prevElementNodeName = element.nodeName;
       }
-
-      function createGraphObject(textBefore, dotBBCodes, textAfter,
-                                 paragraph, dotBBCodeElements, nextElement) {
-        const dotSrcs = dotBBCodes.map(
-          dotBBcode => dotBBcode
-            .slice(0, dotBBcode.indexOf('[/dot]')).replace(/[^\]]*]/, '')
-        );
-        const optionsObjects = getOptionsObjects(dotBBCodes);
-        graphObject = new GraphObject(
-          dotSrcs, optionsObjects, isEditorPreview, replyControl);
-        graphObject.textBefore = textBefore;
-        graphObject.textAfter = textAfter;
-        graphObject.paragraph = paragraph;
-        graphObject.dotBBCodeElements = dotBBCodeElements;
-        graphObject.nextElement = nextElement;
-        return (graphObject);
-      }
-
-      function getOptionsObjects(dotBBCodes) {
-        const optionsObjects = [];
-        for (const dotBBCode of dotBBCodes) {
-          const optionsObject = Object.assign(
-            {},
-            optionsObjects.length == 0 ? {useWorker: true} : optionsObjects[optionsObjects.length - 1]
-          );
-          attributes=dotBBCode.split('[dot')[1].split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
-          for (attribute of attributes) {
-            const [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
-            if (value == 'true') {
-              value = true;
-            }
-            else if (value == 'false') {
-              value = false;
-            }
-            else if (!isNaN(value)) {
-              value = Number(value);
-            }
-            else if (value[0] == '(') {
-              if (value[1] == '(') {
-                value = value.slice(2, -2).split('),(').map(a => a.split(',').map(v => Number(v)));
-              }
-              else {
-                value = value.slice(1, -1).split(',').map(v => Number(v))
-              }
-            }
-            optionsObject[name] = value;
-          }
-          if (optionsObject.hasOwnProperty('tweenPrecision') && optionsObject.tweenPrecision < 1) {
-            optionsObject.tweenPrecision = 1;
-          }
-          optionsObjects.push(optionsObject);
-        }
-        return optionsObjects;
+      if (!withinBlock) {
+        graphObjectBuffer.flush();
       }
 
     });
+    graphObjectBuffer.flush();
     graphObjectsToInsert.forEach(graphObject => insertGraphObject(graphObject));
   },
   {
