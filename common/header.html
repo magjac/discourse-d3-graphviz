@@ -326,8 +326,8 @@
     add(textBefore, dotBBCodes, textAfter, paragraph, dotBBCodeElements, nextElement) {
       if (!textBefore.match(/^\s*$/)) {
         this.flush();
+        this.textBefore = textBefore;
       }
-      this.textBefore = textBefore;
       this.dotBBCodes.push(...dotBBCodes);
       this.textAfter = textAfter;
       this.paragraph = this.paragraph || paragraph;
@@ -460,33 +460,21 @@
             }
           }
           else if (!withinBlock && childNode.nodeName == '#text') {
-            let dotBBCodeElements = [childNode];
             let nextElement = childNode.nextSibling;
-            let dotBBCodes = [];
-            let textBefore = '';
-            let textAfter = '';
+            let foundInline = false;
             const re = /(\[dot[^\]]*\].*?\[\/dot\])/g;
             let lastIndex = 0;
             while ((result = re.exec(str)) !== null) {
-              const prevTextBefore = textBefore;
-              textBefore = str.slice(lastIndex, result.index);
-              if (textBefore != '' && dotBBCodes.length > 0) {
-                graphObjectBuffer.add(
-                  prevTextBefore, dotBBCodes, '', rootElement, [childNode], nextElement
-                );
-                dotBBCodes = [];
-                dotBBCodeElements = [];
-              }
-              dotBBCodes.push(result[0]);
-              textAfter = str.slice(re.lastIndex);
-              lastIndex = re.lastIndex;
-            }
-            if (dotBBCodes.length > 0) {
+              const textBefore = str.slice(lastIndex, result.index);
+              const dotBBCodes = [result[0]];
+              const textAfter = str.slice(re.lastIndex).split('[dot')[0];
               graphObjectBuffer.add(
-                textBefore, dotBBCodes, textAfter, rootElement, dotBBCodeElements, nextElement
+                textBefore, dotBBCodes, textAfter, rootElement, [childNode], nextElement
               );
+              lastIndex = re.lastIndex + textAfter.length;
+              foundInline = true;
             }
-            else if (str.match(/^\s*\[dot[^\]]*\] *$/)) {
+            if (!foundInline && str.match(/^\s*\[dot[^\]]*\] *$/)) {
               withinBlock = true;
               atBlockStart = true;
               partialDotBBCode = str;
