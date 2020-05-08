@@ -4,7 +4,8 @@ describe('Inline rendering', () => {
   const scroll = -(topBarHeight + 10);
 
   afterEach(() => {
-    cy.getStartStopButtons().click({multiple: true });
+    cy.getStartStopButtons()
+      .click({multiple: true, force: true });
   })
 
   it('renders multiple animated graphs inline', () => {
