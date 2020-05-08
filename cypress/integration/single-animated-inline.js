@@ -13,8 +13,10 @@ describe('Inline rendering', () => {
         cy.wrap(paragraphs).should('have.length', 1);
         cy.wrap(paragraphs).findSpans().then(spans => {
           cy.wrap(spans).should('have.length', 1);
-          cy.wrap(spans).eq(0).invoke('text').then(text => text.replace(/\n/g, ''))
-            .should('eq', 'Stopaabba->b');
+          cy.wrap(spans).eq(0).invoke('text').should(text => {
+            const noNewlineText = text.replace(/\n/g, '');
+            expect(noNewlineText).to.equal('Stopaabba->b');
+          });
         });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {
           cy.wrap(graphvizContainers).should('have.length', 1);
