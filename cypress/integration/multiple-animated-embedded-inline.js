@@ -10,7 +10,7 @@ describe('Inline rendering', () => {
   it('renders multiple animated graphs inline', () => {
     const spanTexts = [
       'Second line: ' +
-        'This is a animated graph: ',
+        'This is an animated graph: ',
       'Stop' +
         'aabba->b',
       ', this is another animated graph: ',
