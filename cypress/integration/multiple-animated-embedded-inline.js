@@ -1,5 +1,8 @@
 describe('Inline rendering', () => {
 
+  const topBarHeight = 60;
+  const scroll = -(topBarHeight + 10);
+
   afterEach(() => {
     cy.getStartStopButtons().click({multiple: true });
   })
@@ -37,7 +40,9 @@ describe('Inline rendering', () => {
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {
           cy.wrap(graphvizContainers).should('have.length', 2);
 
-          cy.wrap(graphvizContainers).eq(0).scrollIntoView().findGraph().then(graph => {
+          cy.wrap(graphvizContainers).eq(0)
+            .scrollIntoView({offset: {top: scroll, left: 0}})
+            .findGraph().then(graph => {
             cy.wrap(graph).should('have.length', 1);
             cy.wrap(graph).findGraph0Group().then(graph0group => {
               cy.wrap(graph0group).should('have.length', 1);
@@ -54,7 +59,9 @@ describe('Inline rendering', () => {
             });
           }).then(() => {cy.log('Done checking first graph')}); // Forces wait
 
-          cy.wrap(graphvizContainers).eq(1).scrollIntoView().findGraph().then(graph => {
+          cy.wrap(graphvizContainers).eq(1)
+            .scrollIntoView({offset: {top: scroll, left: 0}})
+            .findGraph().then(graph => {
             cy.wrap(graph).should('have.length', 1);
             cy.wrap(graph).findGraph0Group().then(graph0group => {
               cy.wrap(graph0group).should('have.length', 1);
