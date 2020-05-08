@@ -234,7 +234,6 @@
     }
 
     startStop() {
-      console.log(this.run ? 'Stop' : 'Start');
       this.run = !this.run;
       this.startStopButton.text(this.run ? 'Stop' : 'Start');
       if (!this.running) {
