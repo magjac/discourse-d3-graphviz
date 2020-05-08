@@ -22,16 +22,14 @@ describe('Block rendering', () => {
             cy.wrap(graph).should('have.length', 1);
             cy.wrap(graph).findGraph0Group().then(graph0group => {
               cy.wrap(graph0group).should('have.length', 1);
-              for (let i = 0; i < 2; i++) {
-                cy.wrap(graph0group).findNodes().should('have.length', 2);
-                cy.wrap(graph0group).findEdges().should('have.length', 1);
-                cy.wrap(graph).invoke('text').then(text => text.replace(/\n/g, ''))
-                  .should('eq', 'aabba->b');
-                cy.wrap(graph0group).findNodes().should('have.length', 3);
-                cy.wrap(graph0group).findEdges().should('have.length', 2);
-                cy.wrap(graph).invoke('text').then(text => text.replace(/\n/g, ''))
-                  .should('eq', 'aabba->bcca->c');
-              }
+              cy.wrap(graph0group).findNodes().should('have.length', 2);
+              cy.wrap(graph0group).findEdges().should('have.length', 1);
+              cy.wrap(graph).invoke('text').then(text => text.replace(/\n/g, ''))
+                .should('eq', 'aabba->b');
+              cy.wrap(graph0group).findNodes().should('have.length', 3);
+              cy.wrap(graph0group).findEdges().should('have.length', 2);
+              cy.wrap(graph).invoke('text').then(text => text.replace(/\n/g, ''))
+                .should('eq', 'aabba->bcca->c');
             });
           });
         });
