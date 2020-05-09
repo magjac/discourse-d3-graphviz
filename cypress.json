@@ -1,3 +1,4 @@
 {
+  "ignoreTestFiles": "*~",
   "waitForAnimations": false
 }
