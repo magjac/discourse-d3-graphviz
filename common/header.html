@@ -409,7 +409,6 @@
     const graphObjectBuffer = new GraphObjectBuffer(
       graphObjectsToInsert, isEditorPreview, replyControl
     );
-    // For each paragraph in post
     let withinBlock = false;
     let atBlockStart = false;
     let prevElementNodeName;
@@ -417,6 +416,7 @@
     let partialDotBBCodes = [];
     let partialDotBBCode = '';
     let partialBlockElements = [];
+    // For each paragraph in post
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
       retrieveGraphObject(paragraph, paragraph);
