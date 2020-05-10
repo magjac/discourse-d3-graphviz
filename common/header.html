@@ -21,7 +21,7 @@
       this.visible;
       this.loop = false;
       this.controls;
-      this.startStopButton;
+      this.playPauseButton;
     }
     set selection(selection) {
       this._selection = selection;
@@ -141,12 +141,13 @@
     addControls() {
       this.controls = this.selection
         .append('div');
-      this.startStopButton = this.controls.append('button')
+      this.playPauseButton = this.controls.append('button')
         .attr('class', 'btn-primary')
         .style('margin-top', '15px')
         .style('margin-bottom', '15px')
-        .on('click', this.toggleStartStop.bind(this))
-        .text(this.run ? 'Stop' : 'Start');
+        .style('width', '4.5em')
+        .on('click', this.togglePlayPause.bind(this))
+        .text(this.run ? 'Pause' : 'Play');
       this.repeatLabel = this.controls.append('label')
         .attr('class', 'checkbox-label')
         .style('display', 'inline-flex')
@@ -222,7 +223,7 @@
           }
         }
         else {
-          this.stop();
+          this.pause();
         }
       }
     }
@@ -253,35 +254,35 @@
           .style('color', 'red');
     }
 
-    start() {
+    play() {
       this.run = true;
-      this.startStop();
+      this.playPause();
     }
 
-    stop() {
+    pause() {
       this.run = false;
-      this.startStop();
+      this.playPause();
     }
 
-    toggleStartStop() {
+    togglePlayPause() {
       this.run = !this.run;
-      this.startStop();
+      this.playPause();
     }
 
     setRunning(running) {
       this.running = running;
-      this.updateStartStopButton();
+      this.updatePlayPauseButton();
     }
 
-    updateStartStopButton() {
-      if (this.startStopButton) {
-        this.startStopButton.text(this.run || this.running ? 'Stop' : 'Start');
-        this.startStopButton.node().disabled = this.running && !this.run;
+    updatePlayPauseButton() {
+      if (this.playPauseButton) {
+        this.playPauseButton.text(this.run || this.running ? 'Pause' : 'Play');
+        this.playPauseButton.node().disabled = this.running && !this.run;
       }
     }
 
-    startStop() {
-      this.updateStartStopButton();
+    playPause() {
+      this.updatePlayPauseButton();
       if (this.run && !this.running) {
         this.render();
       }
@@ -290,7 +291,7 @@
     toggleRepeat() {
       this.loop = !this.loop;
       if (this.loop && !this.run) {
-        this.start();
+        this.play();
       }
     }
 
