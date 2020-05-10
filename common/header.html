@@ -193,19 +193,21 @@
                       .delay(delay)
                       .duration(duration));
       }
-      if (this.run && (this.index > 0 || this.loop)) {
-        const editorPreviewIsOpen = this.replyControl.classList.contains('open');
-        if (this.visible && (this.isEditorPreview || !editorPreviewIsOpen)) {
-          this.running = true;
-          this.render();
-        } else {
-          const observer = new MutationObserver((mutations) => {
-            this.visible = this.isVisible();
-            if (this.visible) {
-              this.renderext();
-            }
-          });
-          observer.observe(this.replyControl, {childList: true});
+      if (this.run) {
+        if (this.index > 0 || this.loop) {
+          const editorPreviewIsOpen = this.replyControl.classList.contains('open');
+          if (this.visible && (this.isEditorPreview || !editorPreviewIsOpen)) {
+            this.running = true;
+            this.render();
+          } else {
+            const observer = new MutationObserver((mutations) => {
+              this.visible = this.isVisible();
+              if (this.visible) {
+                this.renderext();
+              }
+            });
+            observer.observe(this.replyControl, {childList: true});
+          }
         }
       }
     }
