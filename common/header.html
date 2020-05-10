@@ -20,6 +20,7 @@
       this.running = false;
       this.visible;
       this.loop = true;
+      this.controls;
       this.startStopButton;
     }
     set selection(selection) {
@@ -137,7 +138,9 @@
     }
 
     addControls() {
-      this.startStopButton = this.selection
+      this.controls = this.selection
+        .append('div');
+      this.startStopButton = this.controls
         .append('div')
         .append('button')
         .attr('class', 'btn-primary')
