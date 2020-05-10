@@ -13,9 +13,11 @@ describe('Inline rendering', () => {
       'Second line: ' +
         'This is an animated graph: ',
       'Stop' +
+        'Repeat' +
         'aabba->b',
       ', this is another animated graph: ',
       'Stop' +
+        'Repeat' +
         'aabba->bcca->c',
       '. Those were the animated graphs.',
     ];

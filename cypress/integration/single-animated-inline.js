@@ -15,7 +15,7 @@ describe('Inline rendering', () => {
           cy.wrap(spans).should('have.length', 1);
           cy.wrap(spans).eq(0).invoke('text').should(text => {
             const noNewlineText = text.replace(/\n/g, '');
-            expect(noNewlineText).to.equal('Stopaabba->b');
+            expect(noNewlineText).to.equal('StopRepeataabba->b');
           });
         });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {

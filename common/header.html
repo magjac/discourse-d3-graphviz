@@ -19,7 +19,7 @@
       this.minHeight = 0;
       this.running = false;
       this.visible;
-      this.loop = true;
+      this.loop = false;
       this.controls;
       this.startStopButton;
     }
@@ -43,6 +43,7 @@
       this.initVisibilityChangeHandler();
       if (this.dotSrcs.length > 1) {
         this.run = !this.isEditorPreview;
+        this.loop = this.options.repeat || false;
         this.addControls();
       }
       this.visible = this.isVisible();
@@ -140,14 +141,25 @@
     addControls() {
       this.controls = this.selection
         .append('div');
-      this.startStopButton = this.controls
-        .append('div')
-        .append('button')
+      this.startStopButton = this.controls.append('button')
         .attr('class', 'btn-primary')
         .style('margin-top', '15px')
         .style('margin-bottom', '15px')
-        .on('click', this.startStop.bind(this))
+        .on('click', this.toggleStartStop.bind(this))
         .text(this.run ? 'Stop' : 'Start');
+      this.repeatLabel = this.controls.append('label')
+        .attr('class', 'checkbox-label')
+        .style('display', 'inline-flex')
+        .style('margin-bottom', '10px');
+      this.repeatCheckbox = this.repeatLabel.append('input')
+        .attr('id', 'repeat-checkbox')
+        .attr('type', 'checkbox')
+        .attr('class', 'ember-checkbox')
+        .style('margin-left', '1em')
+        .on('click', this.toggleRepeat.bind(this));
+      this.repeatLabel
+        .append(() => document.createTextNode("Repeat"));
+      this.repeatCheckbox.node().checked = this.loop;
     }
 
     render() {
@@ -209,6 +221,9 @@
             observer.observe(this.replyControl, {childList: true});
           }
         }
+        else {
+          this.stop();
+        }
       }
     }
 
@@ -238,11 +253,32 @@
           .style('color', 'red');
     }
 
-    startStop() {
+    start() {
+      this.run = true;
+      this.startStop();
+    }
+
+    stop() {
+      this.run = false;
+      this.startStop();
+    }
+
+    toggleStartStop() {
       this.run = !this.run;
+      this.startStop();
+    }
+
+    startStop() {
       this.startStopButton.text(this.run ? 'Stop' : 'Start');
       if (!this.running) {
         this.render();
+      }
+    }
+
+    toggleRepeat() {
+      this.loop = !this.loop;
+      if (this.loop && !this.run) {
+        this.start();
       }
     }
 
