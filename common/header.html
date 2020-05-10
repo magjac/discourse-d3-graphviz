@@ -435,6 +435,9 @@
         }
         else if (element.nodeName == 'PRE') {
           atBlockStart = false;
+          if (!withinBlock) {
+            return;
+          }
         }
         [...element.childNodes].forEach(childNode => {
           if (childNode.nodeName != '#text' && childNode.nodeName != 'BR') {
