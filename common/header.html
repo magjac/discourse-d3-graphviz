@@ -163,7 +163,7 @@
     }
 
     render() {
-      this.running = true;
+      this.setRunning(true);
       const options = this.options;
       const dotSrc = this.dotSrc;
       if (this.index < this.dotSrcs.length) {
@@ -187,7 +187,7 @@
       }
       this.index = (this.index + 1) % this.dotSrcs.length;
       this.visible = this.isVisible();
-      this.running = false;
+      this.setRunning(false);
       if (this.dotSrcs.length > 1) {
         const options = this.options;
         const delay = options.delay || 500;
@@ -209,7 +209,7 @@
         if (this.index > 0 || this.loop) {
           const editorPreviewIsOpen = this.replyControl.classList.contains('open');
           if (this.visible && (this.isEditorPreview || !editorPreviewIsOpen)) {
-            this.running = true;
+            this.setRunning(true);
             this.render();
           } else {
             const observer = new MutationObserver((mutations) => {
@@ -268,8 +268,20 @@
       this.startStop();
     }
 
+    setRunning(running) {
+      this.running = running;
+      this.updateStartStopButton();
+    }
+
+    updateStartStopButton() {
+      if (this.startStopButton) {
+        this.startStopButton.text(this.run || this.running ? 'Stop' : 'Start');
+        this.startStopButton.node().disabled = this.running && !this.run;
+      }
+    }
+
     startStop() {
-      this.startStopButton.text(this.run ? 'Stop' : 'Start');
+      this.updateStartStopButton();
       if (!this.running) {
         this.render();
       }
