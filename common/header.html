@@ -282,7 +282,7 @@
 
     startStop() {
       this.updateStartStopButton();
-      if (!this.running) {
+      if (this.run && !this.running) {
         this.render();
       }
     }
