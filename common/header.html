@@ -57,7 +57,7 @@
           .text(this.textBefore);
       }
       const graphId = 'graphviz_' + this.graphIndex;
-      const graph = d3.select(this.paragraph)
+      const graphContainer = d3.select(this.paragraph)
             .insert('span', () => this.nextElement)
               .classed('graphviz-container', true)
               .attr('id', graphId);
@@ -68,12 +68,12 @@
       }
       d3.selectAll(this.dotBBCodeElements).remove();
       if (this.optionsObjects[0].verbose) {
-        graph
+        graphContainer
           .append('pre')
           .append('code')
           .text(this.dotSrcs.join('\n'));
       }
-      this.graphContainer = graph;
+      this.graphContainer = graphContainer;
     }
 
     initGraphviz() {
@@ -304,37 +304,37 @@
         return false;
       }
       else if (bounding.top >= topBarHeight && bounding.bottom <= window.innerHeight) {
-        // The whole graph is visible
+        // The whole graphContainer is visible
         return true;
       }
       else if (bounding.top <= topBarHeight && bounding.bottom >= window.innerHeight) {
-        // The graph covers the whole visible area
+        // The graphContainer covers the whole visible area
         return true;
       }
       else if (bounding.top >= topBarHeight && bounding.top <= window.innerHeight) {
-        // The top of the graph is visible
+        // The top of the graphContainer is visible
         if (this.graphIndex == 0) {
-          // It's the first graph
+          // It's the first graphContainer
           return true;
         }
-        const prevGraph = this.graphObjects[this.graphIndex - 1].graphContainerElement;
-        const prevBounding = prevGraph.getBoundingClientRect();
+        const prevGraphContainerElement = this.graphObjects[this.graphIndex - 1].graphContainerElement;
+        const prevBounding = prevGraphContainerElement.getBoundingClientRect();
         if (prevBounding.bottom > 0) {
-          // The bottom of the previous graph is also visible
+          // The bottom of the previous graphContainer is also visible
           return false;
         }
         return true;
       }
       else if (bounding.bottom >= topBarHeight && bounding.bottom <= window.innerHeight) {
-        // The bottom of the graph is visible
+        // The bottom of the graphContainer is visible
         if (this.graphIndex == this.graphObjects.length - 1) {
-          // It's the last graph
+          // It's the last graphContainer
           return true;
         }
-        const nextGraph = this.graphObjects[this.graphIndex + 1].graphContainerElement;
-        const nextBounding = nextGraph.getBoundingClientRect();
+        const nextGraphContainerElement = this.graphObjects[this.graphIndex + 1].graphContainerElement;
+        const nextBounding = nextGraphContainerElement.getBoundingClientRect();
         if (nextBounding.top <= window.innerHeight) {
-          // The top of the next graph is also visible
+          // The top of the next graphContainer is also visible
           return false;
         }
         return true;
