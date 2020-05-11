@@ -9,7 +9,7 @@
       this.textAfter = '';
       this.isEditorPreview = isEditorPreview;
       this.replyControl = replyControl;
-      this._selection = null;
+      this._graphContainer = null;
       this.graphObjects = null;
       this.graphIndex = null;
       this.graphviz = null;
@@ -23,12 +23,12 @@
       this.controls;
       this.playPauseButton;
     }
-    set selection(selection) {
-      this._selection = selection;
-      this.element = selection.node();
+    set graphContainer(graphContainer) {
+      this._graphContainer = graphContainer;
+      this.element = graphContainer.node();
     }
-    get selection() {
-      return this._selection;
+    get graphContainer() {
+      return this._graphContainer;
    }
     get dotSrc() {
       return this.dotSrcs[this.index];
@@ -73,11 +73,11 @@
           .append('code')
           .text(this.dotSrcs.join('\n'));
       }
-      this.selection = graph;
+      this.graphContainer = graph;
     }
 
     initGraphviz() {
-      this.graphviz = this._selection.graphviz({useWorker: this.options.useWorker})
+      this.graphviz = this._graphContainer.graphviz({useWorker: this.options.useWorker})
         .options(this.options)
         .attributer(attributer)
         .onerror(this.handleError.bind(this))
@@ -142,7 +142,7 @@
     }
 
     addControls() {
-      this.controls = this.selection
+      this.controls = this.graphContainer
         .append('div');
       this.playPauseButton = this.controls.append('button')
         .attr('class', 'btn-primary')
@@ -178,7 +178,7 @@
     }
 
     done() {
-      const svg = this.selection.selectAll('svg');
+      const svg = this.graphContainer.selectAll('svg');
       const widthAttr = svg.attr('width');
       const heightAttr = svg.attr('height');
       let width = widthAttr.includes('pt') ? width = widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
@@ -250,7 +250,7 @@
         }
         designation = designation + 'graph';
       }
-      this.selection
+      this.graphContainer
         .append('div')
           .attr('id', 'graphviz-error')
           .text(errorMessage + designation)
