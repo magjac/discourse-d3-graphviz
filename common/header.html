@@ -23,6 +23,7 @@
       this.loop = false;
       this.controls;
       this.playPauseButton;
+      this.controlButtons = {};
     }
     set graphContainer(graphContainer) {
       this._graphContainer = graphContainer;
@@ -53,6 +54,11 @@
     }
 
     replaceHTML() {
+      this.controlsContainer = d3.select(this.paragraph).insert('nav', () => this.nextElement)
+        .attr('id', 'graph-controls')
+        .attr('class', 'post-controls')
+        .style('display', 'inline');
+
       if (this.textBefore != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textBefore);
@@ -148,28 +154,33 @@
     }
 
     addControls() {
-      this.controls = this.graphContainer
-        .append('div');
-      this.playPauseButton = this.controls.append('button')
-        .attr('class', 'btn-primary')
-        .style('margin-top', '15px')
-        .style('margin-bottom', '15px')
-        .style('width', '4.5em')
-        .on('click', this.togglePlayPause.bind(this))
-        .text(this.run ? 'Pause' : 'Play');
-      this.repeatLabel = this.controls.append('label')
-        .attr('class', 'checkbox-label')
-        .style('display', 'inline-flex')
-        .style('margin-bottom', '10px');
-      this.repeatCheckbox = this.repeatLabel.append('input')
-        .attr('id', 'repeat-checkbox')
-        .attr('type', 'checkbox')
-        .attr('class', 'ember-checkbox')
-        .style('margin-left', '1em')
-        .on('click', this.toggleRepeat.bind(this));
-      this.repeatLabel
-        .append(() => document.createTextNode("Repeat"));
-      this.repeatCheckbox.node().checked = this.loop;
+      this.controls = this.controlsContainer
+        .append('div')
+        .style('position', 'absolute')
+        .style('left', '-44px')
+      ;
+
+      buttonNames = [
+        'play',
+        'pause',
+        'stop',
+        'sync-alt',
+      ];
+      buttonNames.forEach((buttonName) => {
+        const action = buttonName.split('-')[0];
+        const button = this.controls.append('button')
+              .attr('id', action + '-button')
+              .attr('class', 'widget-button btn-flat no-text btn-icon')
+              .style('display', 'block')
+              .on('click', this.handleControl.bind(this, action));
+        button.append('svg')
+          .attr('class',  'fa d-icon d-icon-' + buttonName + ' svg-icon svg-node')
+          .attr('aria-hidden', 'true')
+          .append('use')
+          .attr('xlink:href', '#' + buttonName);
+        this.controlButtons[action] = button;
+      });
+      this.updateControls();
     }
 
     render() {
@@ -265,40 +276,64 @@
 
     play() {
       this.run = true;
-      this.playPause();
+      this.playOrPause();
     }
 
     pause() {
       this.run = false;
-      this.playPause();
+      this.playOrPause();
     }
 
-    togglePlayPause() {
-      this.run = !this.run;
-      this.playPause();
+    handleControl(buttonName) {
+      if (buttonName == 'play') {
+        this.play();
+      }
+      else if (buttonName == 'pause') {
+        this.pause();
+      }
+      else if (buttonName == 'sync') {
+        this.repeat();
+      }
+      else if (buttonName == 'stop') {
+        this.stop();
+      }
     }
 
     setRunning(running) {
       this.running = running;
-      this.updatePlayPauseButton();
+      this.updateControls();
     }
 
-    updatePlayPauseButton() {
-      if (this.playPauseButton) {
-        this.playPauseButton.text(this.run || this.running ? 'Pause' : 'Play');
-        this.playPauseButton.node().disabled = this.running && !this.run;
+    updateControls() {
+      if (!this.controlButtons.play) {
+        return;
       }
+      const playing = this.run;// || this.running;
+      this.controlButtons.play.style('display', playing ? 'none' : 'block');
+      this.controlButtons.pause.style('display', !playing ? 'none' : 'block');
+      this.controlButtons.sync.style('display', this.loop ? 'none' : 'block');
+      this.controlButtons.stop.style('display', !this.loop ? 'none' : 'block');
     }
 
-    playPause() {
-      this.updatePlayPauseButton();
+    playOrPause() {
+      this.updateControls();
       if (this.run && !this.running) {
         this.render();
       }
     }
 
-    toggleRepeat() {
-      this.loop = !this.loop;
+    repeat() {
+      this.loop = true;
+      this.repeatOrStop();
+    }
+
+    stop() {
+      this.loop = false;
+      this.repeatOrStop();
+    }
+
+    repeatOrStop() {
+      this.updateControls();
       if (this.loop && !this.run) {
         this.play();
       }

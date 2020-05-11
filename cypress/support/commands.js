@@ -2,8 +2,12 @@ Cypress.Commands.add("getCooked", () => {
   return cy.get('.cooked');
 });
 
-Cypress.Commands.add("getStartStopButtons", () => {
-  return cy.getCooked().find('button');
+Cypress.Commands.add("findStopButtons", {prevSubject: true}, (subject, index) => {
+  return cy.wrap(subject).find('button#stop-button');
+});
+
+Cypress.Commands.add("getStopButtons", () => {
+  return cy.getCooked().findStopButtons();
 });
 
 Cypress.Commands.add("findParagraphs", {prevSubject: true}, (subject, index) => {

@@ -1,7 +1,8 @@
 describe('Inline rendering', () => {
 
   afterEach(() => {
-    cy.getStartStopButtons().click({multiple: true });
+    cy.getStopButtons()
+      .click({multiple: true, force: true });
   })
 
   it('renders single animated graph inline with newline between the two DOT BBCodes', () => {
@@ -14,7 +15,7 @@ describe('Inline rendering', () => {
         cy.wrap(paragraphs).findSpans().then(spans => {
           cy.wrap(spans).should('have.length', 1);
           cy.wrap(spans).eq(0).invoke('text').then(text => text.replace(/\n/g, ''))
-            .should('eq', 'StopRepeataabba->b');
+            .should('eq', 'aabba->b');
         });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {
           cy.wrap(graphvizContainers).should('have.length', 1);

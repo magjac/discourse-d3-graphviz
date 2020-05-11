@@ -4,7 +4,7 @@ describe('Inline rendering', () => {
   const scroll = -(topBarHeight + 10);
 
   afterEach(() => {
-    cy.getStartStopButtons()
+    cy.getStopButtons()
       .click({multiple: true, force: true });
   })
 
@@ -12,13 +12,9 @@ describe('Inline rendering', () => {
     const spanTexts = [
       'Second line: ' +
         'This is an animated graph: ',
-      'Stop' +
-        'Repeat' +
-        'aabba->b',
+      'aabba->b',
       ', this is another animated graph: ',
-      'Stop' +
-        'Repeat' +
-        'aabba->bcca->c',
+      'aabba->bcca->c',
       '. Those were the animated graphs.',
     ];
     cy.visit('http://localhost:3000/t/multiple-embedded-animated-inline/37');
