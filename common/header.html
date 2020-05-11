@@ -106,7 +106,10 @@
             }
             if (height > graphObject.minHeight) {
               graphObject.minHeight = height;
-              height = svg.attr('height').split(' ');
+              heightAttr = svg.attr('height');
+              height = typeof heightAttr == 'string' && heightAttr.includes('pt') ?
+                heightAttr.replace('pt', '') * 4 / 3 :
+                +heightAttr;
             }
             else {
               height = graphObject.minHeight;
