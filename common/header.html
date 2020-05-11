@@ -25,7 +25,7 @@
     }
     set graphContainer(graphContainer) {
       this._graphContainer = graphContainer;
-      this.element = graphContainer.node();
+      this.graphContainerElement = graphContainer.node();
     }
     get graphContainer() {
       return this._graphContainer;
@@ -299,7 +299,7 @@
     }
 
     isVisible() {
-      const bounding = this.element.getBoundingClientRect();
+      const bounding = this.graphContainerElement.getBoundingClientRect();
       if (document.hidden) {
         return false;
       }
@@ -317,7 +317,7 @@
           // It's the first graph
           return true;
         }
-        const prevGraph = this.graphObjects[this.graphIndex - 1].element;
+        const prevGraph = this.graphObjects[this.graphIndex - 1].graphContainerElement;
         const prevBounding = prevGraph.getBoundingClientRect();
         if (prevBounding.bottom > 0) {
           // The bottom of the previous graph is also visible
@@ -331,7 +331,7 @@
           // It's the last graph
           return true;
         }
-        const nextGraph = this.graphObjects[this.graphIndex + 1].element;
+        const nextGraph = this.graphObjects[this.graphIndex + 1].graphContainerElement;
         const nextBounding = nextGraph.getBoundingClientRect();
         if (nextBounding.top <= window.innerHeight) {
           // The top of the next graph is also visible
