@@ -162,6 +162,22 @@
         .style('left', '-44px')
       ;
 
+      if (this.isEditorPreview && this.dotSrcs.length > 1) {
+        const gutterWidth = 41;
+        const controlsMargin = 15;
+        if (d3.select(this.cookedDiv).attr('style') == null) {
+          const originalCookedDivWidth = this.cookedDiv.clientWidth;
+          d3.select(this.cookedDiv)
+            .style('margin-left', gutterWidth + 'px')
+            .style('width', (this.cookedDiv.clientWidth - gutterWidth) + 'px');
+          this.controls
+            .style('left', (originalCookedDivWidth + controlsMargin) + 'px');
+        } else {
+          this.controls
+            .style('left', (this.cookedDiv.clientWidth + gutterWidth + controlsMargin) + 'px');
+        }
+      }
+
       buttonNames = [
         'play',
         'pause',
