@@ -1,7 +1,7 @@
 <script type="text/discourse-plugin" version="0.8">
   const topBarHeight = 60; // FIXME: Determine this dynamically
   class GraphObject {
-    constructor(dotSrcs, optionsObjects, isEditorPreview, replyControl) {
+    constructor(dotSrcs, optionsObjects, isEditorPreview, replyControl, cookedDiv) {
       this.dotSrcs = dotSrcs;
       this.optionsObjects = optionsObjects;
       this.paragraph = null;
@@ -9,6 +9,7 @@
       this.textAfter = '';
       this.isEditorPreview = isEditorPreview;
       this.replyControl = replyControl;
+      this.cookedDiv = cookedDiv;
       this._graphContainer = null;
       this.graphvizContainer = null;
       this.graphObjects = null;
@@ -403,10 +404,11 @@
 
   class GraphObjectBuffer {
 
-    constructor(graphObjectsToInsert, isEditorPreview, replyControl) {
+    constructor(graphObjectsToInsert, isEditorPreview, replyControl, cookedDiv) {
       this.graphObjectsToInsert = graphObjectsToInsert;
       this.isEditorPreview = isEditorPreview;
       this.replyControl = replyControl;
+      this.cookedDiv = cookedDiv;
       this.clear()
     }
 
@@ -448,7 +450,8 @@
       );
       const optionsObjects = this.getOptionsObjects();
       const graphObject = new GraphObject(
-        dotSrcs, optionsObjects, this.isEditorPreview, this.replyControl);
+        dotSrcs, optionsObjects, this.isEditorPreview, this.replyControl, this.cookedDiv,
+      );
       graphObject.textBefore = this.textBefore;
       graphObject.textAfter = this.textAfter;
       graphObject.paragraph = this.paragraph;
@@ -504,7 +507,7 @@
     const $paragraphs = $elem.children('p,pre');
     const graphObjectsToInsert = [];
     const graphObjectBuffer = new GraphObjectBuffer(
-      graphObjectsToInsert, isEditorPreview, replyControl
+      graphObjectsToInsert, isEditorPreview, replyControl, cookedDiv
     );
     let withinBlock = false;
     let atBlockStart = false;
