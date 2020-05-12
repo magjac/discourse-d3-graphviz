@@ -398,9 +398,7 @@
       const wasVisible = this.visible;
       this.visible = this.isVisible();
       if (!wasVisible && this.visible) {
-        if (!this.running) {
-          this.render();
-        }
+        this.playOrPause();
       }
     }
 
