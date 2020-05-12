@@ -110,6 +110,8 @@
             let height = typeof heightAttr == 'string' && heightAttr.includes('pt') ?
                 heightAttr.replace('pt', '') * 4 / 3 :
                 +heightAttr;
+            const originalWidth = width;
+            const originalHeight = height;
             if (width > graphObject.minWidth) {
               graphObject.minWidth = width;
               widthAttr = svg.attr('width');
@@ -132,21 +134,16 @@
             }
 
             const newViewBoxValues = datum.attributes.viewBox.split(' ');
-            const viewBoxValues = svg.attr('viewBox').split(' ');
-            viewBoxValues[2] = width * 3 / 4;
-            newViewBoxValues[2] = graphObject.minWidth * 3 / 4;
-            viewBoxValues[3] = height * 3 / 4;
-            newViewBoxValues[3] = graphObject.minHeight * 3 / 4;
+            newViewBoxValues[2] *= graphObject.minWidth / originalWidth;
+            newViewBoxValues[3] *= graphObject.minHeight / originalHeight;
 
-            const viewBox = viewBoxValues.join(' ');
             const newViewBox = newViewBoxValues.join(' ');
 
             svg
               .attr("style", style)
               .style("border", border)
               .attr("width", width)
-              .attr("height", height)
-              .attr("viewBox", viewBox);
+              .attr("height", height);
 
             datum.attributes.width = graphObject.minWidth;
             datum.attributes.height = graphObject.minHeight;
