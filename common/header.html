@@ -112,6 +112,10 @@
                 +heightAttr;
             if (width > graphObject.minWidth) {
               graphObject.minWidth = width;
+              widthAttr = svg.attr('width');
+              width = typeof widthAttr == 'string' && widthAttr.includes('pt') ?
+                widthAttr.replace('pt', '') * 4 / 3 :
+                +widthAttr;
             }
             else {
               width = graphObject.minWidth;
