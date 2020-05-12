@@ -161,6 +161,10 @@
         .style('position', 'absolute')
         .style('left', '-44px')
       ;
+      if (this.paragraph.previousElementSibling == null) {
+        this.controls
+          .style('margin-top', '10px');
+      }
 
       if (this.isEditorPreview && this.dotSrcs.length > 1) {
         const gutterWidth = 41;
