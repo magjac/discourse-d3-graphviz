@@ -486,7 +486,11 @@
       for (const dotBBCode of this.dotBBCodes) {
         const optionsObject = Object.assign(
           {},
-          optionsObjects.length == 0 ? {useWorker: true} : optionsObjects[optionsObjects.length - 1]
+          optionsObjects.length == 0 ?
+            {
+              useWorker: true,
+            } :
+          optionsObjects[optionsObjects.length - 1]
         );
         attributes=dotBBCode.split('[dot')[1].split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
         for (attribute of attributes) {
