@@ -45,7 +45,7 @@
       this.initGraphviz();
       this.initVisibilityChangeHandler();
       if (this.dotSrcs.length > 1) {
-        this.run = !this.isEditorPreview;
+        this.run = !this.isEditorPreview && this.options.play;
         this.loop = this.options.repeat || false;
         this.addControls();
       }
@@ -489,6 +489,7 @@
           optionsObjects.length == 0 ?
             {
               useWorker: true,
+              play: true,
             } :
           optionsObjects[optionsObjects.length - 1]
         );
