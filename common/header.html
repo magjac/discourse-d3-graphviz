@@ -81,6 +81,13 @@
               .style('display', 'inline-block')
               .attr('id', graphId);
 
+      if (this.optionsObjects[0].verbose) {
+        graphContainer
+          .append('pre')
+          .append('code')
+          .text(this.dotSrcs.join('\n'));
+      }
+
       const graphvizId = 'graphviz_' + this.graphIndex;
       this.graphvizContainer = graphContainer.append('span')
         .classed('graphviz-container', true)
@@ -105,12 +112,6 @@
           .text(this.textAfter);
       }
       d3.selectAll(this.dotBBCodeElements).remove();
-      if (this.optionsObjects[0].verbose) {
-        graphContainer
-          .append('pre')
-          .append('code')
-          .text(this.dotSrcs.join('\n'));
-      }
       this.graphContainer = graphContainer;
     }
 
