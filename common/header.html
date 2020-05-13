@@ -410,6 +410,7 @@
     initVisibilityChangeHandler() {
       document.addEventListener('visibilitychange', this.visibilityChangeHandler.bind(this));
       window.addEventListener('scroll', this.visibilityChangeHandler.bind(this));
+      window.addEventListener('resize', this.visibilityChangeHandler.bind(this));
     }
 
     visibilityChangeHandler() {
