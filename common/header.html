@@ -55,11 +55,6 @@
     }
 
     replaceHTML() {
-      this.controlsContainer = d3.select(this.paragraph).insert('nav', () => this.nextElement)
-        .attr('id', 'graph-controls')
-        .attr('class', 'post-controls')
-        .style('display', 'inline');
-
       if (this.textBefore != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textBefore);
@@ -68,12 +63,23 @@
       const graphContainer = d3.select(this.paragraph)
             .insert('span', () => this.nextElement)
               .classed('graph-container', true)
+              .style('display', 'inline-block')
               .attr('id', graphId);
 
       const graphvizId = 'graphviz_' + this.graphIndex;
       this.graphvizContainer = graphContainer.append('span')
         .classed('graphviz-container', true)
+        .style('display', 'inline-block')
         .attr('id', graphvizId);
+
+      this.controlsContainer = graphContainer.append('nav')
+        .attr('id', 'graph-controls')
+        .attr('class', 'post-controls')
+        .style('position', 'absolute')
+        .style('left', '-44px')
+        .style('top', 'inherit')
+        .style('bottom', 'inherit')
+        .style('display', 'inline');
 
       if (this.textAfter != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
@@ -158,8 +164,6 @@
     addControls() {
       this.controls = this.controlsContainer
         .append('div')
-        .style('position', 'absolute')
-        .style('left', '-44px')
       ;
       if (this.paragraph.previousElementSibling == null) {
         this.controls
@@ -174,10 +178,10 @@
           d3.select(this.cookedDiv)
             .style('margin-left', gutterWidth + 'px')
             .style('width', (this.cookedDiv.clientWidth - gutterWidth) + 'px');
-          this.controls
+          this.controlsContainer
             .style('left', (originalCookedDivWidth + controlsMargin) + 'px');
         } else {
-          this.controls
+          this.controlsContainer
             .style('left', (this.cookedDiv.clientWidth + gutterWidth + controlsMargin) + 'px');
         }
       }
