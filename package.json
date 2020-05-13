@@ -1,0 +1,28 @@
+{
+  "name": "discourse-d3-graphviz",
+  "version": "1.0.0",
+  "description": "A Discourse theme component for rendering animated Graphviz graphs using DOT source code",
+  "main": "index.js",
+  "scripts": {
+    "test": "cypress run --config video=${CI:-false} --browser=chrome --headless --record ${CI:-false} --key a12725d3-851c-4e67-b432-079b4fb1a875"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/magjac/discourse-d3-graphviz.git"
+  },
+  "keywords": [
+    "discourse",
+    "graphviz",
+    "dot",
+    "theme-component"
+  ],
+  "author": "Magnus Jacobsson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/magjac/discourse-d3-graphviz/issues"
+  },
+  "homepage": "https://github.com/magjac/discourse-d3-graphviz#readme",
+  "devDependencies": {
+    "cypress": "^4.5.0"
+  }
+}
