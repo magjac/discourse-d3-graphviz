@@ -19,7 +19,8 @@
       this.minHeight = 0;
       this.running = false;
       this.visible;
-      this.loop = true;
+      this.loop = false;
+      this.controls;
       this.startStopButton;
     }
     set selection(selection) {
@@ -42,6 +43,7 @@
       this.initVisibilityChangeHandler();
       if (this.dotSrcs.length > 1) {
         this.run = !this.isEditorPreview;
+        this.loop = this.options.repeat || false;
         this.addControls();
       }
       this.visible = this.isVisible();
@@ -137,18 +139,31 @@
     }
 
     addControls() {
-      this.startStopButton = this.selection
-        .append('div')
-        .append('button')
+      this.controls = this.selection
+        .append('div');
+      this.startStopButton = this.controls.append('button')
         .attr('class', 'btn-primary')
         .style('margin-top', '15px')
         .style('margin-bottom', '15px')
-        .on('click', this.startStop.bind(this))
+        .on('click', this.toggleStartStop.bind(this))
         .text(this.run ? 'Stop' : 'Start');
+      this.repeatLabel = this.controls.append('label')
+        .attr('class', 'checkbox-label')
+        .style('display', 'inline-flex')
+        .style('margin-bottom', '10px');
+      this.repeatCheckbox = this.repeatLabel.append('input')
+        .attr('id', 'repeat-checkbox')
+        .attr('type', 'checkbox')
+        .attr('class', 'ember-checkbox')
+        .style('margin-left', '1em')
+        .on('click', this.toggleRepeat.bind(this));
+      this.repeatLabel
+        .append(() => document.createTextNode("Repeat"));
+      this.repeatCheckbox.node().checked = this.loop;
     }
 
     render() {
-      this.running = true;
+      this.setRunning(true);
       const options = this.options;
       const dotSrc = this.dotSrc;
       if (this.index < this.dotSrcs.length) {
@@ -172,7 +187,7 @@
       }
       this.index = (this.index + 1) % this.dotSrcs.length;
       this.visible = this.isVisible();
-      this.running = false;
+      this.setRunning(false);
       if (this.dotSrcs.length > 1) {
         const options = this.options;
         const delay = options.delay || 500;
@@ -190,19 +205,24 @@
                       .delay(delay)
                       .duration(duration));
       }
-      if (this.run && (this.index > 0 || this.loop)) {
-        const editorPreviewIsOpen = this.replyControl.classList.contains('open');
-        if (this.visible && (this.isEditorPreview || !editorPreviewIsOpen)) {
-          this.running = true;
-          this.render();
-        } else {
-          const observer = new MutationObserver((mutations) => {
-            this.visible = this.isVisible();
-            if (this.visible) {
-              this.renderext();
-            }
-          });
-          observer.observe(this.replyControl, {childList: true});
+      if (this.run) {
+        if (this.index > 0 || this.loop) {
+          const editorPreviewIsOpen = this.replyControl.classList.contains('open');
+          if (this.visible && (this.isEditorPreview || !editorPreviewIsOpen)) {
+            this.setRunning(true);
+            this.render();
+          } else {
+            const observer = new MutationObserver((mutations) => {
+              this.visible = this.isVisible();
+              if (this.visible) {
+                this.render();
+              }
+            });
+            observer.observe(this.replyControl, {childList: true});
+          }
+        }
+        else {
+          this.stop();
         }
       }
     }
@@ -233,11 +253,44 @@
           .style('color', 'red');
     }
 
-    startStop() {
+    start() {
+      this.run = true;
+      this.startStop();
+    }
+
+    stop() {
+      this.run = false;
+      this.startStop();
+    }
+
+    toggleStartStop() {
       this.run = !this.run;
-      this.startStopButton.text(this.run ? 'Stop' : 'Start');
-      if (!this.running) {
+      this.startStop();
+    }
+
+    setRunning(running) {
+      this.running = running;
+      this.updateStartStopButton();
+    }
+
+    updateStartStopButton() {
+      if (this.startStopButton) {
+        this.startStopButton.text(this.run || this.running ? 'Stop' : 'Start');
+        this.startStopButton.node().disabled = this.running && !this.run;
+      }
+    }
+
+    startStop() {
+      this.updateStartStopButton();
+      if (this.run && !this.running) {
         this.render();
+      }
+    }
+
+    toggleRepeat() {
+      this.loop = !this.loop;
+      if (this.loop && !this.run) {
+        this.start();
       }
     }
 
@@ -409,7 +462,6 @@
     const graphObjectBuffer = new GraphObjectBuffer(
       graphObjectsToInsert, isEditorPreview, replyControl
     );
-    // For each paragraph in post
     let withinBlock = false;
     let atBlockStart = false;
     let prevElementNodeName;
@@ -417,6 +469,7 @@
     let partialDotBBCodes = [];
     let partialDotBBCode = '';
     let partialBlockElements = [];
+    // For each paragraph in post
     $.each($paragraphs, (paragraphIndex, paragraph) => {
 
       retrieveGraphObject(paragraph, paragraph);
@@ -435,6 +488,9 @@
         }
         else if (element.nodeName == 'PRE') {
           atBlockStart = false;
+          if (!withinBlock) {
+            return;
+          }
         }
         [...element.childNodes].forEach(childNode => {
           if (childNode.nodeName != '#text' && childNode.nodeName != 'BR') {
