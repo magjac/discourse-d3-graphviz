@@ -543,7 +543,7 @@
     const cookedDiv = $elem.get(0);
     const replyControl = d3.select('#reply-control').node();
     const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
-    const $paragraphs = $elem.children('p,pre');
+    const $paragraphs = $elem.children('p,pre,code');
     const graphObjectsToInsert = [];
     const graphObjectBuffer = new GraphObjectBuffer(
       graphObjectsToInsert, isEditorPreview, replyControl, cookedDiv
@@ -572,7 +572,7 @@
             }
           }
         }
-        else if (element.nodeName == 'PRE') {
+        else if (element.nodeName == 'PRE' || element.nodeName == 'CODE') {
           atBlockStart = false;
           if (!withinBlock) {
             return;
