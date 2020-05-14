@@ -176,7 +176,10 @@
             datum.attributes.height = graphObject.minHeight;
             datum.attributes.viewBox = newViewBox;
           }
-          datum.attributes.style = 'border: ' + border + ';' + style;
+          datum.attributes.style = [
+            border ? 'border: ' + border : '',
+            style ? style : '',
+          ].join('; ');
         }
       }
     }
