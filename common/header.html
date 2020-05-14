@@ -478,7 +478,9 @@
     createGraphObject() {
       const dotSrcs = this.dotBBCodes.map(
         dotBBcode => dotBBcode
-          .slice(0, dotBBcode.indexOf('[/dot]')).replace(/[^\]]*]/, '')
+          .slice(0, dotBBcode.indexOf('[/dot]'))
+          .replace(/[^\]]*]/, '')
+          .replace(/[“”]/g, '"')
       );
       const optionsObjects = this.getOptionsObjects();
       const graphObject = new GraphObject(
