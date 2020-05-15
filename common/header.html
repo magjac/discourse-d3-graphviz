@@ -267,19 +267,23 @@
             this.setRunning(true);
             this.render();
           } else {
-            const observer = new MutationObserver((mutations) => {
-              this.visible = this.isVisible();
-              if (this.visible) {
-                this.render();
-              }
-            });
-            observer.observe(this.replyControl, {childList: true});
+            this.watchEditorOpenAndClose();
           }
         }
         else {
           this.pause();
         }
       }
+    }
+
+    watchEditorOpenAndClose() {
+      const observer = new MutationObserver((mutations) => {
+        this.visible = this.isVisible();
+        if (this.visible) {
+          this.render();
+        }
+      });
+      observer.observe(this.replyControl, {childList: true});
     }
 
     handleError(errorMessage) {
