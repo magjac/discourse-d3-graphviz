@@ -2,6 +2,8 @@
   const topBarHeight = 60; // FIXME: Determine this dynamically
   class GraphObject {
     constructor(dotSrcs, optionsObjects, isEditorPreview, replyControl, cookedDiv) {
+      this.prevGraph = null;
+      this.nextGraph = null;
       this.dotSrcs = dotSrcs;
       this.optionsObjects = optionsObjects;
       this.paragraph = null;
@@ -12,8 +14,6 @@
       this.cookedDiv = cookedDiv;
       this._graphContainer = null;
       this.graphvizContainer = null;
-      this.graphObjects = null;
-      this.graphIndex = null;
       this.graphviz = null;
       this.index = 0;
       this.run = false;
@@ -74,12 +74,11 @@
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textBefore);
       }
-      const graphId = 'graph_' + this.graphIndex;
       const graphContainer = d3.select(this.paragraph)
+            .attr('id', 'graphviz-container')
             .insert('span', () => this.nextElement)
               .classed('graph-container', true)
-              .style('display', 'inline-block')
-              .attr('id', graphId);
+              .style('display', 'inline-block');
 
       if (this.optionsObjects[0].verbose) {
         graphContainer
@@ -88,11 +87,10 @@
           .text(this.dotSrcs.join('\n'));
       }
 
-      const graphvizId = 'graphviz_' + this.graphIndex;
       this.graphvizContainer = graphContainer.append('span')
+        .attr('id', 'graphviz-container')
         .classed('graphviz-container', true)
-        .style('display', 'inline-block')
-        .attr('id', graphvizId);
+        .style('display', 'inline-block');
 
       this.controlsContainer = graphContainer.append('nav')
         .attr('id', 'graph-controls')
@@ -392,11 +390,11 @@
       }
       else if (bounding.top >= topBarHeight && bounding.top <= window.innerHeight) {
         // The top of the graphContainer is visible
-        if (this.graphIndex == 0) {
+        if (this.prevGraphObject == null) {
           // It's the first graphContainer
           return true;
         }
-        const prevGraphContainerElement = this.graphObjects[this.graphIndex - 1].graphContainerElement;
+        const prevGraphContainerElement = this.prevGraphObject.graphContainerElement;
         const prevBounding = prevGraphContainerElement.getBoundingClientRect();
         if (prevBounding.bottom > 0) {
           // The bottom of the previous graphContainer is also visible
@@ -406,11 +404,11 @@
       }
       else if (bounding.bottom >= topBarHeight && bounding.bottom <= window.innerHeight) {
         // The bottom of the graphContainer is visible
-        if (this.graphIndex == this.graphObjects.length - 1) {
+        if (this.nextGraphObject == null) {
           // It's the last graphContainer
           return true;
         }
-        const nextGraphContainerElement = this.graphObjects[this.graphIndex + 1].graphContainerElement;
+        const nextGraphContainerElement = this.nextGraphObject.graphContainerElement;
         const nextBounding = nextGraphContainerElement.getBoundingClientRect();
         if (nextBounding.top <= window.innerHeight) {
           // The top of the next graphContainer is also visible
@@ -542,7 +540,31 @@
     }
   }
 
-  const graphObjects = [];
+  class GraphObjectList {
+    constructor() {
+      this.head = null;
+      this.tail = null;
+    }
+    append(graphObject) {
+      const prev = this.tail;
+      if (prev == null) {
+        this.head = graphObject;
+      }
+      else {
+        prev.nextGraph = graphObject;
+      }
+      this.tail = graphObject;
+      graphObject.prevGraph = prev;
+    }
+    getPrev(graphObject) {
+      return graphObject.prevGraph;
+    }
+    getNext(graphObject) {
+      return graphObject.nextGraph;
+    }
+  }
+
+  const graphObjectList = new GraphObjectList();
   // For each post (replies and the editor)
   api.decorateCooked($elem => {
     const cookedDiv = $elem.get(0);
@@ -652,9 +674,7 @@
   );
 
   function insertGraphObject(graphObject) {
-    graphObject.graphIndex = graphObjects.length;
-    graphObjects.push(graphObject);
-    graphObject.graphObjects = graphObjects;
+    graphObjectList.append(graphObject);
     graphObject.init();
   }
 
