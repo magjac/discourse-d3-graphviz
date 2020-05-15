@@ -543,7 +543,7 @@
   }
 
   const graphObjects = [];
-  // For each post
+  // For each post (replies and the editor)
   api.decorateCooked($elem => {
     const cookedDiv = $elem.get(0);
     const replyControl = d3.select('#reply-control').node();
