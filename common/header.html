@@ -262,7 +262,8 @@
       if (this.run) {
         if (this.index > 0 || this.loop) {
           const editorPreviewIsOpen = this.replyControl.classList.contains('open');
-          if (this.visible && (this.isEditorPreview || !editorPreviewIsOpen)) {
+          const isNormalPostAndEditorIsClosed = !this.isEditorPreview && !editorPreviewIsOpen;
+          if (this.visible && (isNormalPostAndEditorIsClosed || this.isEditorPreview)) {
             this.setRunning(true);
             this.render();
           } else {
