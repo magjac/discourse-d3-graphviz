@@ -562,6 +562,31 @@
     getNext(graphObject) {
       return graphObject.nextGraph;
     }
+    each(callback) {
+      let graphObject = this.head;
+      let i = 0;
+      while (graphObject != null) {
+        callback(graphObject, i);
+        graphObject = graphObject.nextGraph;
+        i += 1;
+      }
+    }
+    delete(graphObject) {
+      prevGraphObject = graphObject.prevGraph;
+      nextGraphObject = graphObject.nextGraph;
+      if (prevGraphObject == null) {
+        this.head = nextGraphObject;
+      }
+      else {
+        prevGraphObject.nextGraph = nextGraphObject;
+      }
+      if (nextGraphObject == null) {
+        this.tail = prevGraphObject;
+      }
+      else {
+        nextGraphObject.prevGraph = prevGraphObject;
+      }
+    }
   }
 
   const graphObjectList = new GraphObjectList();
@@ -570,6 +595,12 @@
     const cookedDiv = $elem.get(0);
     const replyControl = d3.select('#reply-control').node();
     const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
+    graphObjectList.each((graphObject, graphIndex) => {
+      const existsInDOM = document.body.contains(graphObject.graphvizContainer.node());
+      if (!existsInDOM) {
+        graphObjectList.delete(graphObject);
+      }
+    });
     const $paragraphs = $elem.children('p,pre,code');
     const graphObjectsToInsert = [];
     const graphObjectBuffer = new GraphObjectBuffer(
