@@ -12,10 +12,12 @@ describe('Block rendering', () => {
         cy.wrap(paragraphs).findSpans().then(spans => {
           cy.wrap(spans).should('have.length', 1);
         });
+        cy.wrap(paragraphs).findGraphContainers().then(graphContainers => {
+          cy.wrap(graphContainers).findCode()
+            .should('have.text', 'digraph {\n\nnode [shape=box]\n\na -> b\n\n}\n');
+        });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {
           cy.wrap(graphvizContainers).should('have.length', 1);
-          cy.wrap(graphvizContainers).findCode()
-            .should('have.text', 'digraph {\n\nnode [shape=box]\n\na -> b\n\n}\n');
           cy.wrap(graphvizContainers).findGraph().then(graph => {
             cy.wrap(graph).should('have.length', 1);
             cy.wrap(graph).findGraph0Group().then(graph0group => {

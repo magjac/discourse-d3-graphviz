@@ -1,7 +1,7 @@
 <script type="text/discourse-plugin" version="0.8">
   const topBarHeight = 60; // FIXME: Determine this dynamically
   class GraphObject {
-    constructor(dotSrcs, optionsObjects, isEditorPreview, replyControl) {
+    constructor(dotSrcs, optionsObjects, isEditorPreview, replyControl, cookedDiv) {
       this.dotSrcs = dotSrcs;
       this.optionsObjects = optionsObjects;
       this.paragraph = null;
@@ -9,7 +9,9 @@
       this.textAfter = '';
       this.isEditorPreview = isEditorPreview;
       this.replyControl = replyControl;
-      this._selection = null;
+      this.cookedDiv = cookedDiv;
+      this._graphContainer = null;
+      this.graphvizContainer = null;
       this.graphObjects = null;
       this.graphIndex = null;
       this.graphviz = null;
@@ -21,14 +23,15 @@
       this.visible;
       this.loop = false;
       this.controls;
-      this.startStopButton;
+      this.playPauseButton;
+      this.controlButtons = {};
     }
-    set selection(selection) {
-      this._selection = selection;
-      this.element = selection.node();
+    set graphContainer(graphContainer) {
+      this._graphContainer = graphContainer;
+      this.graphContainerElement = graphContainer.node();
     }
-    get selection() {
-      return this._selection;
+    get graphContainer() {
+      return this._graphContainer;
    }
     get dotSrc() {
       return this.dotSrcs[this.index];
@@ -42,7 +45,7 @@
       this.initGraphviz();
       this.initVisibilityChangeHandler();
       if (this.dotSrcs.length > 1) {
-        this.run = !this.isEditorPreview;
+        this.run = !this.isEditorPreview && this.options.play;
         this.loop = this.options.repeat || false;
         this.addControls();
       }
@@ -52,15 +55,50 @@
     }
 
     replaceHTML() {
+      if (this.isEditorPreview) {
+        const previewWrapper = this.cookedDiv.parentElement;
+        const editorContainer = previewWrapper.parentElement;
+        if (previewWrapper.previousElementSibling.id != 'controls-placeholder') {
+          d3.select(editorContainer).insert('div', () => previewWrapper)
+            .attr('id', 'controls-placeholder')
+            .style('margin-top', '-43px')
+            .style('width', '42px')
+            .style('height', '100%')
+            .style('display', 'flex')
+            .style('flex-direction', 'column');
+          d3.select(previewWrapper)
+            .style('max-width', 'calc(49% - 42px)');
+        }
+      }
       if (this.textBefore != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textBefore);
       }
-      const graphId = 'graphviz_' + this.graphIndex;
-      const graph = d3.select(this.paragraph)
+      const graphId = 'graph_' + this.graphIndex;
+      const graphContainer = d3.select(this.paragraph)
             .insert('span', () => this.nextElement)
-              .classed('graphviz-container', true)
+              .classed('graph-container', true)
+              .style('display', 'inline-block')
               .attr('id', graphId);
+
+      const graphvizId = 'graphviz_' + this.graphIndex;
+      this.graphvizContainer = graphContainer.append('span')
+        .classed('graphviz-container', true)
+        .style('display', 'inline-block')
+        .attr('id', graphvizId);
+
+      this.controlsContainer = graphContainer.append('nav')
+        .attr('id', 'graph-controls')
+        .attr('class', 'post-controls')
+        .style('position', 'absolute')
+        .style('left', '-44px')
+        .style('top', 'inherit')
+        .style('bottom', 'inherit')
+        .style('display', 'inline');
+      if (this.isEditorPreview) {
+        this.controlsContainer
+          .style('left', 'calc(50% - 0px)');
+      }
 
       if (this.textAfter != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
@@ -68,16 +106,16 @@
       }
       d3.selectAll(this.dotBBCodeElements).remove();
       if (this.optionsObjects[0].verbose) {
-        graph
+        graphContainer
           .append('pre')
           .append('code')
           .text(this.dotSrcs.join('\n'));
       }
-      this.selection = graph;
+      this.graphContainer = graphContainer;
     }
 
     initGraphviz() {
-      this.graphviz = this._selection.graphviz({useWorker: this.options.useWorker})
+      this.graphviz = this.graphvizContainer.graphviz({useWorker: this.options.useWorker})
         .options(this.options)
         .attributer(attributer)
         .onerror(this.handleError.bind(this))
@@ -98,36 +136,40 @@
             let height = typeof heightAttr == 'string' && heightAttr.includes('pt') ?
                 heightAttr.replace('pt', '') * 4 / 3 :
                 +heightAttr;
+            const originalWidth = width;
+            const originalHeight = height;
             if (width > graphObject.minWidth) {
               graphObject.minWidth = width;
+              widthAttr = svg.attr('width');
+              width = typeof widthAttr == 'string' && widthAttr.includes('pt') ?
+                widthAttr.replace('pt', '') * 4 / 3 :
+                +widthAttr;
             }
             else {
               width = graphObject.minWidth;
             }
             if (height > graphObject.minHeight) {
               graphObject.minHeight = height;
-              height = svg.attr('height').split(' ');
+              heightAttr = svg.attr('height');
+              height = typeof heightAttr == 'string' && heightAttr.includes('pt') ?
+                heightAttr.replace('pt', '') * 4 / 3 :
+                +heightAttr;
             }
             else {
               height = graphObject.minHeight;
             }
 
             const newViewBoxValues = datum.attributes.viewBox.split(' ');
-            const viewBoxValues = svg.attr('viewBox').split(' ');
-            viewBoxValues[2] = width * 3 / 4;
-            newViewBoxValues[2] = graphObject.minWidth * 3 / 4;
-            viewBoxValues[3] = height * 3 / 4;
-            newViewBoxValues[3] = graphObject.minHeight * 3 / 4;
+            newViewBoxValues[2] *= graphObject.minWidth / originalWidth;
+            newViewBoxValues[3] *= graphObject.minHeight / originalHeight;
 
-            const viewBox = viewBoxValues.join(' ');
             const newViewBox = newViewBoxValues.join(' ');
 
             svg
               .attr("style", style)
               .style("border", border)
               .attr("width", width)
-              .attr("height", height)
-              .attr("viewBox", viewBox);
+              .attr("height", height);
 
             datum.attributes.width = graphObject.minWidth;
             datum.attributes.height = graphObject.minHeight;
@@ -139,27 +181,35 @@
     }
 
     addControls() {
-      this.controls = this.selection
-        .append('div');
-      this.startStopButton = this.controls.append('button')
-        .attr('class', 'btn-primary')
-        .style('margin-top', '15px')
-        .style('margin-bottom', '15px')
-        .on('click', this.toggleStartStop.bind(this))
-        .text(this.run ? 'Stop' : 'Start');
-      this.repeatLabel = this.controls.append('label')
-        .attr('class', 'checkbox-label')
-        .style('display', 'inline-flex')
-        .style('margin-bottom', '10px');
-      this.repeatCheckbox = this.repeatLabel.append('input')
-        .attr('id', 'repeat-checkbox')
-        .attr('type', 'checkbox')
-        .attr('class', 'ember-checkbox')
-        .style('margin-left', '1em')
-        .on('click', this.toggleRepeat.bind(this));
-      this.repeatLabel
-        .append(() => document.createTextNode("Repeat"));
-      this.repeatCheckbox.node().checked = this.loop;
+      this.controls = this.controlsContainer
+        .append('div')
+      ;
+      if (this.paragraph.previousElementSibling == null) {
+        this.controls
+          .style('margin-top', '10px');
+      }
+
+      buttonNames = [
+        'play',
+        'pause',
+        'stop',
+        'sync-alt',
+      ];
+      buttonNames.forEach((buttonName) => {
+        const action = buttonName.split('-')[0];
+        const button = this.controls.append('button')
+              .attr('id', action + '-button')
+              .attr('class', 'widget-button btn-flat no-text btn-icon')
+              .style('display', 'block')
+              .on('click', this.handleControl.bind(this, action));
+        button.append('svg')
+          .attr('class',  'fa d-icon d-icon-' + buttonName + ' svg-icon svg-node')
+          .attr('aria-hidden', 'true')
+          .append('use')
+          .attr('xlink:href', '#' + buttonName);
+        this.controlButtons[action] = button;
+      });
+      this.updateControls();
     }
 
     render() {
@@ -174,7 +224,7 @@
     }
 
     done() {
-      const svg = this.selection.selectAll('svg');
+      const svg = this.graphvizContainer.selectAll('svg');
       const widthAttr = svg.attr('width');
       const heightAttr = svg.attr('height');
       let width = widthAttr.includes('pt') ? width = widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
@@ -222,7 +272,7 @@
           }
         }
         else {
-          this.stop();
+          this.pause();
         }
       }
     }
@@ -246,91 +296,115 @@
         }
         designation = designation + 'graph';
       }
-      this.selection
+      this.graphContainer
         .append('div')
           .attr('id', 'graphviz-error')
           .text(errorMessage + designation)
           .style('color', 'red');
     }
 
-    start() {
+    play() {
       this.run = true;
-      this.startStop();
+      this.playOrPause();
     }
 
-    stop() {
+    pause() {
       this.run = false;
-      this.startStop();
+      this.playOrPause();
     }
 
-    toggleStartStop() {
-      this.run = !this.run;
-      this.startStop();
+    handleControl(buttonName) {
+      if (buttonName == 'play') {
+        this.play();
+      }
+      else if (buttonName == 'pause') {
+        this.pause();
+      }
+      else if (buttonName == 'sync') {
+        this.repeat();
+      }
+      else if (buttonName == 'stop') {
+        this.stop();
+      }
     }
 
     setRunning(running) {
       this.running = running;
-      this.updateStartStopButton();
+      this.updateControls();
     }
 
-    updateStartStopButton() {
-      if (this.startStopButton) {
-        this.startStopButton.text(this.run || this.running ? 'Stop' : 'Start');
-        this.startStopButton.node().disabled = this.running && !this.run;
+    updateControls() {
+      if (!this.controlButtons.play) {
+        return;
       }
+      const playing = this.run;// || this.running;
+      this.controlButtons.play.style('display', playing ? 'none' : 'block');
+      this.controlButtons.pause.style('display', !playing ? 'none' : 'block');
+      this.controlButtons.sync.style('display', this.loop ? 'none' : 'block');
+      this.controlButtons.stop.style('display', !this.loop ? 'none' : 'block');
     }
 
-    startStop() {
-      this.updateStartStopButton();
+    playOrPause() {
+      this.updateControls();
       if (this.run && !this.running) {
         this.render();
       }
     }
 
-    toggleRepeat() {
-      this.loop = !this.loop;
+    repeat() {
+      this.loop = true;
+      this.repeatOrStop();
+    }
+
+    stop() {
+      this.loop = false;
+      this.repeatOrStop();
+    }
+
+    repeatOrStop() {
+      this.updateControls();
       if (this.loop && !this.run) {
-        this.start();
+        this.play();
       }
     }
 
     isVisible() {
-      const bounding = this.element.getBoundingClientRect();
+      const bounding = this.graphContainerElement.getBoundingClientRect();
       if (document.hidden) {
         return false;
       }
       else if (bounding.top >= topBarHeight && bounding.bottom <= window.innerHeight) {
-        // The whole graph is visible
+        // The whole graphContainer is visible
         return true;
       }
       else if (bounding.top <= topBarHeight && bounding.bottom >= window.innerHeight) {
-        // The graph covers the whole visible area
+        // The graphContainer covers the whole visible area
         return true;
       }
       else if (bounding.top >= topBarHeight && bounding.top <= window.innerHeight) {
-        // The top of the graph is visible
+        // The top of the graphContainer is visible
         if (this.graphIndex == 0) {
-          // It's the first graph
+          // It's the first graphContainer
           return true;
         }
-        const prevGraph = this.graphObjects[this.graphIndex - 1].element;
-        const prevBounding = prevGraph.getBoundingClientRect();
+        const prevGraphContainerElement = this.graphObjects[this.graphIndex - 1].graphContainerElement;
+        const prevBounding = prevGraphContainerElement.getBoundingClientRect();
         if (prevBounding.bottom > 0) {
-          // The bottom of the previous graph is also visible
+          // The bottom of the previous graphContainer is also visible
           return false;
         }
         return true;
       }
       else if (bounding.bottom >= topBarHeight && bounding.bottom <= window.innerHeight) {
-        // The bottom of the graph is visible
+        // The bottom of the graphContainer is visible
         if (this.graphIndex == this.graphObjects.length - 1) {
-          // It's the last graph
+          // It's the last graphContainer
           return true;
         }
-        const nextGraph = this.graphObjects[this.graphIndex + 1].element;
-        const nextBounding = nextGraph.getBoundingClientRect();
+        const nextGraphContainerElement = this.graphObjects[this.graphIndex + 1].graphContainerElement;
+        const nextBounding = nextGraphContainerElement.getBoundingClientRect();
         if (nextBounding.top <= window.innerHeight) {
-          // The top of the next graph is also visible
+          // The top of the next graphContainer is also visible
           return false;
         }
         return true;
@@ -343,15 +417,14 @@
     initVisibilityChangeHandler() {
       document.addEventListener('visibilitychange', this.visibilityChangeHandler.bind(this));
       window.addEventListener('scroll', this.visibilityChangeHandler.bind(this));
+      window.addEventListener('resize', this.visibilityChangeHandler.bind(this));
     }
 
     visibilityChangeHandler() {
       const wasVisible = this.visible;
       this.visible = this.isVisible();
       if (!wasVisible && this.visible) {
-        if (!this.running) {
-          this.render();
-        }
+        this.playOrPause();
       }
     }
 
@@ -359,10 +432,11 @@
 
   class GraphObjectBuffer {
 
-    constructor(graphObjectsToInsert, isEditorPreview, replyControl) {
+    constructor(graphObjectsToInsert, isEditorPreview, replyControl, cookedDiv) {
       this.graphObjectsToInsert = graphObjectsToInsert;
       this.isEditorPreview = isEditorPreview;
       this.replyControl = replyControl;
+      this.cookedDiv = cookedDiv;
       this.clear()
     }
 
@@ -404,7 +478,8 @@
       );
       const optionsObjects = this.getOptionsObjects();
       const graphObject = new GraphObject(
-        dotSrcs, optionsObjects, this.isEditorPreview, this.replyControl);
+        dotSrcs, optionsObjects, this.isEditorPreview, this.replyControl, this.cookedDiv,
+      );
       graphObject.textBefore = this.textBefore;
       graphObject.textAfter = this.textAfter;
       graphObject.paragraph = this.paragraph;
@@ -418,7 +493,12 @@
       for (const dotBBCode of this.dotBBCodes) {
         const optionsObject = Object.assign(
           {},
-          optionsObjects.length == 0 ? {useWorker: true} : optionsObjects[optionsObjects.length - 1]
+          optionsObjects.length == 0 ?
+            {
+              useWorker: true,
+              play: true,
+            } :
+          optionsObjects[optionsObjects.length - 1]
         );
         attributes=dotBBCode.split('[dot')[1].split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
         for (attribute of attributes) {
@@ -460,7 +540,7 @@
     const $paragraphs = $elem.children('p,pre');
     const graphObjectsToInsert = [];
     const graphObjectBuffer = new GraphObjectBuffer(
-      graphObjectsToInsert, isEditorPreview, replyControl
+      graphObjectsToInsert, isEditorPreview, replyControl, cookedDiv
     );
     let withinBlock = false;
     let atBlockStart = false;

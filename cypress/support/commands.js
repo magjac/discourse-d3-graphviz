@@ -2,8 +2,12 @@ Cypress.Commands.add("getCooked", () => {
   return cy.get('.cooked');
 });
 
-Cypress.Commands.add("getStartStopButtons", () => {
-  return cy.getCooked().find('button');
+Cypress.Commands.add("findStopButtons", {prevSubject: true}, (subject, index) => {
+  return cy.wrap(subject).find('button#stop-button');
+});
+
+Cypress.Commands.add("getStopButtons", () => {
+  return cy.getCooked().findStopButtons();
 });
 
 Cypress.Commands.add("findParagraphs", {prevSubject: true}, (subject, index) => {
@@ -14,16 +18,20 @@ Cypress.Commands.add("findSpans", {prevSubject: true}, (subject, index) => {
   return cy.wrap(subject).find('> span');
 });
 
+Cypress.Commands.add("findGraphContainers", {prevSubject: true}, (subject, index) => {
+  return cy.wrap(subject).find('span.graph-container');
+});
+
 Cypress.Commands.add("findGraphvizContainers", {prevSubject: true}, (subject, index) => {
-  return cy.wrap(subject).find('> span.graphviz-container');
+  return cy.wrap(subject).find('span.graphviz-container');
 });
 
 Cypress.Commands.add("findCode", {prevSubject: true}, (subject, index) => {
-  return cy.wrap(subject).find('> pre > code');
+  return cy.wrap(subject).find('pre > code');
 });
 
 Cypress.Commands.add("findGraph", {prevSubject: true}, (subject, index) => {
-  return cy.wrap(subject).find('> svg');
+  return cy.wrap(subject).find('svg');
 });
 
 Cypress.Commands.add("findGraph0Group", {prevSubject: true}, (subject, index) => {

@@ -1,7 +1,8 @@
 describe('Inline rendering', () => {
 
   afterEach(() => {
-    cy.getStartStopButtons().click({multiple: true });
+    cy.getStopButtons()
+      .click({multiple: true, force: true });
   })
 
   it('renders single animated graph inline', () => {
@@ -15,7 +16,7 @@ describe('Inline rendering', () => {
           cy.wrap(spans).should('have.length', 1);
           cy.wrap(spans).eq(0).invoke('text').should(text => {
             const noNewlineText = text.replace(/\n/g, '');
-            expect(noNewlineText).to.equal('StopRepeataabba->b');
+            expect(noNewlineText).to.equal('aabba->b');
           });
         });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {

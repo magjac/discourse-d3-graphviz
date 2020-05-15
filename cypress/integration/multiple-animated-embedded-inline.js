@@ -4,7 +4,7 @@ describe('Inline rendering', () => {
   const scroll = -(topBarHeight + 10);
 
   afterEach(() => {
-    cy.getStartStopButtons()
+    cy.getStopButtons()
       .click({multiple: true, force: true });
   })
 
@@ -12,13 +12,9 @@ describe('Inline rendering', () => {
     const spanTexts = [
       'Second line: ' +
         'This is an animated graph: ',
-      'Stop' +
-        'Repeat' +
-        'aabba->b',
+      'aabba->b',
       ', this is another animated graph: ',
-      'Stop' +
-        'Repeat' +
-        'aabba->bcca->c',
+      'aabba->bcca->c',
       '. Those were the animated graphs.',
     ];
     cy.visit('http://localhost:3000/t/multiple-embedded-animated-inline/37');
@@ -27,14 +23,6 @@ describe('Inline rendering', () => {
       cy.wrap(cooked).find('text').should('have.text', 'ababc');
       cy.wrap(cooked).findParagraphs().then(paragraphs => {
         cy.wrap(paragraphs).should('have.length', 1);
-        cy.wrap(paragraphs).invoke('text').should(text => {
-          const noNewlineText = text.replace(/\n/g, '');
-          expect(noNewlineText).to.equal(
-            'First line' +
-              spanTexts.join('') +
-              'Third line'
-          );
-        });
         cy.wrap(paragraphs).findSpans().then(spans => {
           cy.wrap(spans).should('have.length', 5);
           for (let i = 0; i < spanTexts.length; i++) {
