@@ -2,6 +2,8 @@
   const topBarHeight = 60; // FIXME: Determine this dynamically
   class GraphObject {
     constructor(dotSrcs, optionsObjects, isEditorPreview, replyControl, cookedDiv) {
+      this.prevGraph = null;
+      this.nextGraph = null;
       this.dotSrcs = dotSrcs;
       this.optionsObjects = optionsObjects;
       this.paragraph = null;
@@ -12,10 +14,9 @@
       this.cookedDiv = cookedDiv;
       this._graphContainer = null;
       this.graphvizContainer = null;
-      this.graphObjects = null;
-      this.graphIndex = null;
       this.graphviz = null;
       this.index = 0;
+      this.isRendered = false;
       this.run = false;
       this.minWidth = 0;
       this.minHeight = 0;
@@ -69,23 +70,29 @@
           d3.select(previewWrapper)
             .style('max-width', 'calc(49% - 42px)');
         }
+        previewWrapper.addEventListener('scroll', this.visibilityChangeHandler.bind(this));
       }
       if (this.textBefore != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textBefore);
       }
-      const graphId = 'graph_' + this.graphIndex;
       const graphContainer = d3.select(this.paragraph)
+            .attr('id', 'graphviz-container')
             .insert('span', () => this.nextElement)
               .classed('graph-container', true)
-              .style('display', 'inline-block')
-              .attr('id', graphId);
+              .style('display', 'inline-block');
 
-      const graphvizId = 'graphviz_' + this.graphIndex;
+      if (this.optionsObjects[0].verbose) {
+        graphContainer
+          .append('pre')
+          .append('code')
+          .text(this.dotSrcs.join('\n'));
+      }
+
       this.graphvizContainer = graphContainer.append('span')
+        .attr('id', 'graphviz-container')
         .classed('graphviz-container', true)
-        .style('display', 'inline-block')
-        .attr('id', graphvizId);
+        .style('display', 'inline-block');
 
       this.controlsContainer = graphContainer.append('nav')
         .attr('id', 'graph-controls')
@@ -105,12 +112,6 @@
           .text(this.textAfter);
       }
       d3.selectAll(this.dotBBCodeElements).remove();
-      if (this.optionsObjects[0].verbose) {
-        graphContainer
-          .append('pre')
-          .append('code')
-          .text(this.dotSrcs.join('\n'));
-      }
       this.graphContainer = graphContainer;
     }
 
@@ -175,7 +176,10 @@
             datum.attributes.height = graphObject.minHeight;
             datum.attributes.viewBox = newViewBox;
           }
-          datum.attributes.style = 'border: ' + border + ';' + style;
+          datum.attributes.style = [
+            border ? 'border: ' + border : '',
+            style ? style : '',
+          ].join('; ');
         }
       }
     }
@@ -213,6 +217,9 @@
     }
 
     render() {
+      if (this.isEditorPreview && !this.isVisible()) {
+        return;
+      }
       this.setRunning(true);
       const options = this.options;
       const dotSrc = this.dotSrc;
@@ -221,6 +228,7 @@
           .options(options)
           .renderDot(dotSrc);
       }
+      this.isRendered = true;
     }
 
     done() {
@@ -258,23 +266,28 @@
       if (this.run) {
         if (this.index > 0 || this.loop) {
           const editorPreviewIsOpen = this.replyControl.classList.contains('open');
-          if (this.visible && (this.isEditorPreview || !editorPreviewIsOpen)) {
+          const isNormalPostAndEditorIsClosed = !this.isEditorPreview && !editorPreviewIsOpen;
+          if (this.visible && (isNormalPostAndEditorIsClosed || this.isEditorPreview)) {
             this.setRunning(true);
             this.render();
           } else {
-            const observer = new MutationObserver((mutations) => {
-              this.visible = this.isVisible();
-              if (this.visible) {
-                this.render();
-              }
-            });
-            observer.observe(this.replyControl, {childList: true});
+            this.watchEditorOpenAndClose();
           }
         }
         else {
           this.pause();
         }
       }
+    }
+
+    watchEditorOpenAndClose() {
+      const observer = new MutationObserver((mutations) => {
+        this.visible = this.isVisible();
+        if (this.visible) {
+          this.render();
+        }
+      });
+      observer.observe(this.replyControl, {childList: true});
     }
 
     handleError(errorMessage) {
@@ -383,11 +396,11 @@
       }
       else if (bounding.top >= topBarHeight && bounding.top <= window.innerHeight) {
         // The top of the graphContainer is visible
-        if (this.graphIndex == 0) {
+        if (this.prevGraphObject == null) {
           // It's the first graphContainer
           return true;
         }
-        const prevGraphContainerElement = this.graphObjects[this.graphIndex - 1].graphContainerElement;
+        const prevGraphContainerElement = this.prevGraphObject.graphContainerElement;
         const prevBounding = prevGraphContainerElement.getBoundingClientRect();
         if (prevBounding.bottom > 0) {
           // The bottom of the previous graphContainer is also visible
@@ -397,11 +410,11 @@
       }
       else if (bounding.bottom >= topBarHeight && bounding.bottom <= window.innerHeight) {
         // The bottom of the graphContainer is visible
-        if (this.graphIndex == this.graphObjects.length - 1) {
+        if (this.nextGraphObject == null) {
           // It's the last graphContainer
           return true;
         }
-        const nextGraphContainerElement = this.graphObjects[this.graphIndex + 1].graphContainerElement;
+        const nextGraphContainerElement = this.nextGraphObject.graphContainerElement;
         const nextBounding = nextGraphContainerElement.getBoundingClientRect();
         if (nextBounding.top <= window.innerHeight) {
           // The top of the next graphContainer is also visible
@@ -418,9 +431,15 @@
       document.addEventListener('visibilitychange', this.visibilityChangeHandler.bind(this));
       window.addEventListener('scroll', this.visibilityChangeHandler.bind(this));
       window.addEventListener('resize', this.visibilityChangeHandler.bind(this));
+      this.replyControl.addEventListener('transitionend', this.visibilityChangeHandler.bind(this));
     }
 
     visibilityChangeHandler() {
+      if (this.isEditorPreview && !this.isRendered) {
+        if (this.isVisible()) {
+          this.render();
+        }
+      }
       const wasVisible = this.visible;
       this.visible = this.isVisible();
       if (!wasVisible && this.visible) {
@@ -474,7 +493,9 @@
     createGraphObject() {
       const dotSrcs = this.dotBBCodes.map(
         dotBBcode => dotBBcode
-          .slice(0, dotBBcode.indexOf('[/dot]')).replace(/[^\]]*]/, '')
+          .slice(0, dotBBcode.indexOf('[/dot]'))
+          .replace(/[^\]]*]/, '')
+          .replace(/[“”]/g, '"')
       );
       const optionsObjects = this.getOptionsObjects();
       const graphObject = new GraphObject(
@@ -531,13 +552,68 @@
     }
   }
 
-  const graphObjects = [];
-  // For each post
+  class GraphObjectList {
+    constructor() {
+      this.head = null;
+      this.tail = null;
+    }
+    append(graphObject) {
+      const prev = this.tail;
+      if (prev == null) {
+        this.head = graphObject;
+      }
+      else {
+        prev.nextGraph = graphObject;
+      }
+      this.tail = graphObject;
+      graphObject.prevGraph = prev;
+    }
+    getPrev(graphObject) {
+      return graphObject.prevGraph;
+    }
+    getNext(graphObject) {
+      return graphObject.nextGraph;
+    }
+    each(callback) {
+      let graphObject = this.head;
+      let i = 0;
+      while (graphObject != null) {
+        callback(graphObject, i);
+        graphObject = graphObject.nextGraph;
+        i += 1;
+      }
+    }
+    delete(graphObject) {
+      prevGraphObject = graphObject.prevGraph;
+      nextGraphObject = graphObject.nextGraph;
+      if (prevGraphObject == null) {
+        this.head = nextGraphObject;
+      }
+      else {
+        prevGraphObject.nextGraph = nextGraphObject;
+      }
+      if (nextGraphObject == null) {
+        this.tail = prevGraphObject;
+      }
+      else {
+        nextGraphObject.prevGraph = prevGraphObject;
+      }
+    }
+  }
+
+  const graphObjectList = new GraphObjectList();
+  // For each post (replies and the editor)
   api.decorateCooked($elem => {
     const cookedDiv = $elem.get(0);
     const replyControl = d3.select('#reply-control').node();
     const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
-    const $paragraphs = $elem.children('p,pre');
+    graphObjectList.each((graphObject, graphIndex) => {
+      const existsInDOM = document.body.contains(graphObject.graphvizContainer.node());
+      if (!existsInDOM) {
+        graphObjectList.delete(graphObject);
+      }
+    });
+    const $paragraphs = $elem.children('p,pre,code');
     const graphObjectsToInsert = [];
     const graphObjectBuffer = new GraphObjectBuffer(
       graphObjectsToInsert, isEditorPreview, replyControl, cookedDiv
@@ -566,7 +642,7 @@
             }
           }
         }
-        else if (element.nodeName == 'PRE') {
+        else if (element.nodeName == 'PRE' || element.nodeName == 'CODE') {
           atBlockStart = false;
           if (!withinBlock) {
             return;
@@ -641,9 +717,7 @@
   );
 
   function insertGraphObject(graphObject) {
-    graphObject.graphIndex = graphObjects.length;
-    graphObjects.push(graphObject);
-    graphObject.graphObjects = graphObjects;
+    graphObjectList.append(graphObject);
     graphObject.init();
   }
 
