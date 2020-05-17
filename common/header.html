@@ -86,7 +86,6 @@
           .text(this.textBefore);
       }
       const graphContainer = d3.select(this.paragraph)
-            .attr('id', 'graphviz-container')
             .insert('span', () => this.nextElement)
               .classed('graph-container', true)
               .style('display', 'inline-block');
