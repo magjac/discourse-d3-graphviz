@@ -435,9 +435,17 @@
     }
 
     visibilityChangeHandler() {
-      if (this.isEditorPreview && !this.isRendered) {
+      if (this.isEditorPreview) {
         if (this.isVisible()) {
-          this.render();
+          this.graphContainer.classed('visually-hidden', false);
+          if (!this.isRendered) {
+            this.render();
+          }
+        }
+        else {
+          if (this.isRendered) {
+            this.graphContainer.classed('visually-hidden', true);
+          }
         }
       }
       const wasVisible = this.visible;
