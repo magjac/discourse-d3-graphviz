@@ -11,6 +11,7 @@
       this.textAfter = '';
       this.isEditorPreview = isEditorPreview;
       this.replyControl = replyControl;
+      this.previewWrapper = null;
       this.cookedDiv = cookedDiv;
       this._graphContainer = null;
       this.graphvizContainer = null;
@@ -26,6 +27,15 @@
       this.controls;
       this.playPauseButton;
       this.controlButtons = {};
+    }
+    release () {
+      document.removeEventListener('visibilitychange', this.boundVisibilityChangeHandler);
+      window.removeEventListener('scroll', this.boundVisibilityChangeHandler);
+      window.removeEventListener('resize', this.boundVisibilityChangeHandler);
+      this.replyControl.removeEventListener('transitionend', this.boundVisibilityChangeHandler);
+      if (this.previewWrapper != null) {
+        this.previewWrapper.removeEventListener('scroll', this.boundVisibilityChangeHandler);
+      }
     }
     set graphContainer(graphContainer) {
       this._graphContainer = graphContainer;
@@ -57,20 +67,19 @@
 
     replaceHTML() {
       if (this.isEditorPreview) {
-        const previewWrapper = this.cookedDiv.parentElement;
-        const editorContainer = previewWrapper.parentElement;
-        if (previewWrapper.previousElementSibling.id != 'controls-placeholder') {
-          d3.select(editorContainer).insert('div', () => previewWrapper)
+        this.previewWrapper = this.cookedDiv.parentElement;
+        const editorContainer = this.previewWrapper.parentElement;
+        if (this.previewWrapper.previousElementSibling.id != 'controls-placeholder') {
+          d3.select(editorContainer).insert('div', () => this.previewWrapper)
             .attr('id', 'controls-placeholder')
             .style('margin-top', '-43px')
             .style('width', '42px')
             .style('height', '100%')
             .style('display', 'flex')
             .style('flex-direction', 'column');
-          d3.select(previewWrapper)
+          d3.select(this.previewWrapper)
             .style('max-width', 'calc(49% - 42px)');
         }
-        previewWrapper.addEventListener('scroll', this.visibilityChangeHandler.bind(this));
       }
       if (this.textBefore != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
@@ -428,10 +437,14 @@
     }
 
     initVisibilityChangeHandler() {
-      document.addEventListener('visibilitychange', this.visibilityChangeHandler.bind(this));
-      window.addEventListener('scroll', this.visibilityChangeHandler.bind(this));
-      window.addEventListener('resize', this.visibilityChangeHandler.bind(this));
-      this.replyControl.addEventListener('transitionend', this.visibilityChangeHandler.bind(this));
+      this.boundVisibilityChangeHandler = this.visibilityChangeHandler.bind(this);
+      document.addEventListener('visibilitychange', this.boundVisibilityChangeHandler);
+      window.addEventListener('scroll', this.boundVisibilityChangeHandler);
+      window.addEventListener('resize', this.boundVisibilityChangeHandler);
+      this.replyControl.addEventListener('transitionend', this.boundVisibilityChangeHandler);
+      if (this.previewWrapper != null) {
+        this.previewWrapper.addEventListener('scroll', this.boundVisibilityChangeHandler);
+      }
     }
 
     visibilityChangeHandler() {
@@ -592,6 +605,7 @@
       }
     }
     delete(graphObject) {
+      graphObject.release();
       prevGraphObject = graphObject.prevGraph;
       nextGraphObject = graphObject.nextGraph;
       if (prevGraphObject == null) {
