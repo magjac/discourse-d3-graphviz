@@ -631,7 +631,15 @@
     const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
     graphObjectList.each((graphObject, graphIndex) => {
       const existsInDOM = document.body.contains(graphObject.graphvizContainer.node());
-      if (!existsInDOM) {
+      const cookedParent = graphObject.cookedDiv.parentElement;
+      const topicBody = cookedParent && cookedParent.parentElement.parentElement;
+      const row = topicBody && topicBody.parentElement;
+      const article = row && row.parentElement;
+      const topicPost = article && article.parentElement;
+      const postStream = topicPost && topicPost.parentElement;
+      const postStreamParent = postStream && postStream.parentElement;
+      const existsInVirtualDOM = postStreamParent == null;
+      if (!(existsInDOM || existsInVirtualDOM)) {
         graphObjectList.delete(graphObject);
       }
     });
