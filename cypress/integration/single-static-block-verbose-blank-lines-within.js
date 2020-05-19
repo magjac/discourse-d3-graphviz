@@ -6,9 +6,7 @@ describe('Block rendering', () => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
       cy.wrap(cooked).findParagraphs().then(paragraphs => {
-// FIXME: change when paragraphs with their contents removed are not left beind
-//        cy.wrap(paragraphs).should('have.length', 1);
-        cy.wrap(paragraphs).should('have.length', 4);
+        cy.wrap(paragraphs).should('have.length', 1);
         cy.wrap(paragraphs).findSpans().then(spans => {
           cy.wrap(spans).should('have.length', 1);
         });

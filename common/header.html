@@ -11,6 +11,7 @@
       this.textAfter = '';
       this.isEditorPreview = isEditorPreview;
       this.replyControl = replyControl;
+      this.previewWrapper = null;
       this.cookedDiv = cookedDiv;
       this._graphContainer = null;
       this.graphvizContainer = null;
@@ -26,6 +27,16 @@
       this.controls;
       this.playPauseButton;
       this.controlButtons = {};
+    }
+    release () {
+      document.removeEventListener('visibilitychange', this.boundVisibilityChangeHandler);
+      window.removeEventListener('scroll', this.boundVisibilityChangeHandler);
+      window.removeEventListener('resize', this.boundVisibilityChangeHandler);
+      this.replyControl.removeEventListener('transitionend', this.boundVisibilityChangeHandler);
+      if (this.previewWrapper != null) {
+        this.previewWrapper.removeEventListener('scroll', this.boundVisibilityChangeHandler);
+      }
+      this.graphviz.destroy();
     }
     set graphContainer(graphContainer) {
       this._graphContainer = graphContainer;
@@ -57,27 +68,25 @@
 
     replaceHTML() {
       if (this.isEditorPreview) {
-        const previewWrapper = this.cookedDiv.parentElement;
-        const editorContainer = previewWrapper.parentElement;
-        if (previewWrapper.previousElementSibling.id != 'controls-placeholder') {
-          d3.select(editorContainer).insert('div', () => previewWrapper)
+        this.previewWrapper = this.cookedDiv.parentElement;
+        const editorContainer = this.previewWrapper.parentElement;
+        if (this.previewWrapper.previousElementSibling.id != 'controls-placeholder') {
+          d3.select(editorContainer).insert('div', () => this.previewWrapper)
             .attr('id', 'controls-placeholder')
             .style('margin-top', '-43px')
             .style('width', '42px')
             .style('height', '100%')
             .style('display', 'flex')
             .style('flex-direction', 'column');
-          d3.select(previewWrapper)
+          d3.select(this.previewWrapper)
             .style('max-width', 'calc(49% - 42px)');
         }
-        previewWrapper.addEventListener('scroll', this.visibilityChangeHandler.bind(this));
       }
       if (this.textBefore != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textBefore);
       }
       const graphContainer = d3.select(this.paragraph)
-            .attr('id', 'graphviz-container')
             .insert('span', () => this.nextElement)
               .classed('graph-container', true)
               .style('display', 'inline-block');
@@ -111,12 +120,24 @@
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textAfter);
       }
+      const dotBBCodeParents = d3.selectAll(this.dotBBCodeElements).select(function () {
+        return this.parentElement;
+      });
       d3.selectAll(this.dotBBCodeElements).remove();
+      const paragraphToKeep = this.paragraph;
+      dotBBCodeParents.each(function () {
+        if (this !== paragraphToKeep) {
+          d3.select(this).remove();
+        }
+      });
       this.graphContainer = graphContainer;
     }
 
     initGraphviz() {
-      this.graphviz = this.graphvizContainer.graphviz({useWorker: this.options.useWorker})
+      this.graphviz = this.graphvizContainer.graphviz({
+        useWorker: this.options.useWorker,
+        useSharedWorker: this.options.useSharedWorker,
+      })
         .options(this.options)
         .attributer(attributer)
         .onerror(this.handleError.bind(this))
@@ -428,16 +449,28 @@
     }
 
     initVisibilityChangeHandler() {
-      document.addEventListener('visibilitychange', this.visibilityChangeHandler.bind(this));
-      window.addEventListener('scroll', this.visibilityChangeHandler.bind(this));
-      window.addEventListener('resize', this.visibilityChangeHandler.bind(this));
-      this.replyControl.addEventListener('transitionend', this.visibilityChangeHandler.bind(this));
+      this.boundVisibilityChangeHandler = this.visibilityChangeHandler.bind(this);
+      document.addEventListener('visibilitychange', this.boundVisibilityChangeHandler);
+      window.addEventListener('scroll', this.boundVisibilityChangeHandler);
+      window.addEventListener('resize', this.boundVisibilityChangeHandler);
+      this.replyControl.addEventListener('transitionend', this.boundVisibilityChangeHandler);
+      if (this.previewWrapper != null) {
+        this.previewWrapper.addEventListener('scroll', this.boundVisibilityChangeHandler);
+      }
     }
 
     visibilityChangeHandler() {
-      if (this.isEditorPreview && !this.isRendered) {
+      if (this.isEditorPreview) {
         if (this.isVisible()) {
-          this.render();
+          this.graphContainer.classed('visually-hidden', false);
+          if (!this.isRendered) {
+            this.render();
+          }
+        }
+        else {
+          if (this.isRendered) {
+            this.graphContainer.classed('visually-hidden', true);
+          }
         }
       }
       const wasVisible = this.visible;
@@ -517,6 +550,7 @@
           optionsObjects.length == 0 ?
             {
               useWorker: true,
+              useSharedWorker: true,
               play: true,
             } :
           optionsObjects[optionsObjects.length - 1]
@@ -584,6 +618,7 @@
       }
     }
     delete(graphObject) {
+      graphObject.release();
       prevGraphObject = graphObject.prevGraph;
       nextGraphObject = graphObject.nextGraph;
       if (prevGraphObject == null) {
@@ -609,7 +644,15 @@
     const isEditorPreview = d3.select(cookedDiv).classed('d-editor-preview');
     graphObjectList.each((graphObject, graphIndex) => {
       const existsInDOM = document.body.contains(graphObject.graphvizContainer.node());
-      if (!existsInDOM) {
+      const cookedParent = graphObject.cookedDiv.parentElement;
+      const topicBody = cookedParent && cookedParent.parentElement.parentElement;
+      const row = topicBody && topicBody.parentElement;
+      const article = row && row.parentElement;
+      const topicPost = article && article.parentElement;
+      const postStream = topicPost && topicPost.parentElement;
+      const postStreamParent = postStream && postStream.parentElement;
+      const existsInVirtualDOM = postStreamParent == null;
+      if (!(existsInDOM || existsInVirtualDOM)) {
         graphObjectList.delete(graphObject);
       }
     });
