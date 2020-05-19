@@ -67,20 +67,16 @@
     }
 
     replaceHTML() {
+      d3.select(this.cookedDiv)
+        .style('overflow', 'visible');
+
       if (this.isEditorPreview) {
+        d3.select('.title-and-category')
+          .style('width', 'calc(50% - 33px');
         this.previewWrapper = this.cookedDiv.parentElement;
         const editorContainer = this.previewWrapper.parentElement;
-        if (this.previewWrapper.previousElementSibling.id != 'controls-placeholder') {
-          d3.select(editorContainer).insert('div', () => this.previewWrapper)
-            .attr('id', 'controls-placeholder')
-            .style('margin-top', '-43px')
-            .style('width', '42px')
-            .style('height', '100%')
-            .style('display', 'flex')
-            .style('flex-direction', 'column');
-          d3.select(this.previewWrapper)
-            .style('max-width', 'calc(49% - 42px)');
-        }
+        d3.select(this.previewWrapper)
+          .style('padding-left', '52px');
       }
       if (this.textBefore != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
@@ -98,23 +94,25 @@
           .text(this.dotSrcs.join('\n'));
       }
 
-      this.graphvizContainer = graphContainer.append('span')
-        .attr('id', 'graphviz-container')
-        .classed('graphviz-container', true)
-        .style('display', 'inline-block');
-
+      const isFirstGraphInNonEditorPost = !this.isEditorPreview &&
+            this.paragraph.previousElementSibling == null;
       this.controlsContainer = graphContainer.append('nav')
         .attr('id', 'graph-controls')
         .attr('class', 'post-controls')
-        .style('position', 'absolute')
-        .style('left', '-44px')
-        .style('top', 'inherit')
+        .style('position', 'relative')
+        .style('left', '-55px')
+        .style('top', isFirstGraphInNonEditorPost ? '10px': '0px')
         .style('bottom', 'inherit')
         .style('display', 'inline');
       if (this.isEditorPreview) {
         this.controlsContainer
-          .style('left', 'calc(50% - 0px)');
+          .style('left', '-51px');
       }
+
+      this.graphvizContainer = graphContainer.append('span')
+        .attr('id', 'graphviz-container')
+        .classed('graphviz-container', true)
+        .style('display', 'inline-block');
 
       if (this.textAfter != '') {
         d3.select(this.paragraph).insert('span', () => this.nextElement)
@@ -208,11 +206,8 @@
     addControls() {
       this.controls = this.controlsContainer
         .append('div')
+        .style('height', '0px')
       ;
-      if (this.paragraph.previousElementSibling == null) {
-        this.controls
-          .style('margin-top', '10px');
-      }
 
       buttonNames = [
         'play',
