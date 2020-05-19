@@ -1,0 +1,4 @@
+svg_icons:
+  default: 'pause|stop'
+  type: 'list'
+  list_type: 'compact'
