@@ -6,9 +6,7 @@ describe('Block rendering verbose with code block', () => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'cd');
       cy.wrap(cooked).findParagraphs().then(paragraphs => {
-// FIXME: change when paragraphs with their contents removed are not left behind
-//        cy.wrap(paragraphs).should('have.length', 1);
-        cy.wrap(paragraphs).should('have.length', 2);
+        cy.wrap(paragraphs).should('have.length', 1);
         cy.wrap(paragraphs).findSpans().then(spans => {
           cy.wrap(spans).should('have.length', 1);
         });
