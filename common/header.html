@@ -36,6 +36,7 @@
       if (this.previewWrapper != null) {
         this.previewWrapper.removeEventListener('scroll', this.boundVisibilityChangeHandler);
       }
+      this.graphviz.destroy();
     }
     set graphContainer(graphContainer) {
       this._graphContainer = graphContainer;
