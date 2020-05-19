@@ -125,7 +125,10 @@
     }
 
     initGraphviz() {
-      this.graphviz = this.graphvizContainer.graphviz({useWorker: this.options.useWorker})
+      this.graphviz = this.graphvizContainer.graphviz({
+        useWorker: this.options.useWorker,
+        useSharedWorker: this.options.useSharedWorker,
+      })
         .options(this.options)
         .attributer(attributer)
         .onerror(this.handleError.bind(this))
@@ -538,6 +541,7 @@
           optionsObjects.length == 0 ?
             {
               useWorker: true,
+              useSharedWorker: true,
               play: true,
             } :
           optionsObjects[optionsObjects.length - 1]
