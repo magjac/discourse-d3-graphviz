@@ -120,7 +120,16 @@
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textAfter);
       }
+      const dotBBCodeParents = d3.selectAll(this.dotBBCodeElements).select(function () {
+        return this.parentElement;
+      });
       d3.selectAll(this.dotBBCodeElements).remove();
+      const paragraphToKeep = this.paragraph;
+      dotBBCodeParents.each(function () {
+        if (this !== paragraphToKeep) {
+          d3.select(this).remove();
+        }
+      });
       this.graphContainer = graphContainer;
     }
 
