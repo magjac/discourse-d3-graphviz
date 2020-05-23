@@ -1,5 +1,6 @@
 <script type="text/discourse-plugin" version="0.8">
   const topBarHeight = 60; // FIXME: Determine this dynamically
+  const collapseEditorGraphsNotVisible = false;
   class GraphObject {
     constructor(dotSrcs, optionsObjects, isEditorPreview, replyControl, cookedDiv) {
       this.prevGraph = null;
@@ -463,7 +464,7 @@
           }
         }
         else {
-          if (this.isRendered) {
+          if (this.isRendered && collapseEditorGraphsNotVisible) {
             this.graphContainer.classed('visually-hidden', true);
           }
         }
