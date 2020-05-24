@@ -264,8 +264,8 @@
       this.setRunning(false);
       if (this.dotSrcs.length > 1) {
         const options = this.options;
-        const delay = options.delay || 500;
-        const duration = options.duration || 1500;
+        const delay = options.delay == undefined ? 500 : options.delay;
+        const duration = options.duration == undefined ? 1500 : options.duration;
         let ease;
         if (options.ease == 'linear') {
           ease = d3.easeLinear
