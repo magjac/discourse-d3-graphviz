@@ -125,7 +125,9 @@
       const paragraphToKeep = this.paragraph;
       dotBBCodeParents.each(function () {
         if (this !== paragraphToKeep) {
-          d3.select(this).remove();
+          if (this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0].nodeName == 'BR')) {
+            d3.select(this).remove();
+          }
         }
       });
       this.graphContainer = graphContainer;
