@@ -3,3 +3,12 @@
     overflow: hidden;
 }
 
+/* align option anchor with other table cells in options reference */
+td > a > h4 {
+    display: table-cell;
+}
+
+/* hide anchor marks in table cells */
+td > a > h4 > a {
+    display: none;
+}

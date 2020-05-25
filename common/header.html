@@ -1,5 +1,6 @@
 <script type="text/discourse-plugin" version="0.8">
   const topBarHeight = 60; // FIXME: Determine this dynamically
+  const collapseEditorGraphsNotVisible = false;
   class GraphObject {
     constructor(dotSrcs, optionsObjects, isEditorPreview, replyControl, cookedDiv) {
       this.prevGraph = null;
@@ -25,7 +26,6 @@
       this.visible;
       this.loop = false;
       this.controls;
-      this.playPauseButton;
       this.controlButtons = {};
     }
     release () {
@@ -34,7 +34,7 @@
       window.removeEventListener('resize', this.boundVisibilityChangeHandler);
       this.replyControl.removeEventListener('transitionend', this.boundVisibilityChangeHandler);
       if (this.previewWrapper != null) {
-        this.previewWrapper.removeEventListener('scroll', this.boundVisibilityChangeHandler);
+        this.intersectionObserver.disconnect();
       }
       this.graphviz.destroy();
     }
@@ -61,7 +61,7 @@
         this.loop = this.options.repeat || false;
         this.addControls();
       }
-      this.visible = this.isVisible();
+      this.visible = !this.isEditorPreview && this.isVisible();
 
       this.render();
     }
@@ -125,7 +125,9 @@
       const paragraphToKeep = this.paragraph;
       dotBBCodeParents.each(function () {
         if (this !== paragraphToKeep) {
-          d3.select(this).remove();
+          if (this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0].nodeName == 'BR')) {
+            d3.select(this).remove();
+          }
         }
       });
       this.graphContainer = graphContainer;
@@ -233,7 +235,7 @@
     }
 
     render() {
-      if (this.isEditorPreview && !this.isVisible()) {
+      if (this.isEditorPreview && !this.visible) {
         return;
       }
       this.setRunning(true);
@@ -264,8 +266,8 @@
       this.setRunning(false);
       if (this.dotSrcs.length > 1) {
         const options = this.options;
-        const delay = options.delay || 500;
-        const duration = options.duration || 1500;
+        const delay = options.delay == undefined ? 500 : options.delay;
+        const duration = options.duration == undefined ? 1500 : options.duration;
         let ease;
         if (options.ease == 'linear') {
           ease = d3.easeLinear
@@ -450,20 +452,34 @@
       window.addEventListener('resize', this.boundVisibilityChangeHandler);
       this.replyControl.addEventListener('transitionend', this.boundVisibilityChangeHandler);
       if (this.previewWrapper != null) {
-        this.previewWrapper.addEventListener('scroll', this.boundVisibilityChangeHandler);
+        const graphObject = this;
+        let options = {
+          root: this.previewWrapper,
+          rootMargin: '0px',
+          threshold: 0
+        }
+        this.intersectionObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            graphObject.visible = entry.isIntersecting;
+            if (graphObject.visible) {
+              graphObject.visibilityChangeHandler();
+            }
+          });
+        }, options);
+        this.intersectionObserver.observe(this.graphContainer.node());
       }
     }
 
     visibilityChangeHandler() {
       if (this.isEditorPreview) {
-        if (this.isVisible()) {
+        if (this.visible) {
           this.graphContainer.classed('visually-hidden', false);
           if (!this.isRendered) {
             this.render();
           }
         }
         else {
-          if (this.isRendered) {
+          if (this.isRendered && collapseEditorGraphsNotVisible) {
             this.graphContainer.classed('visually-hidden', true);
           }
         }
