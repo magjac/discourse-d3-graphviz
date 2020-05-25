@@ -34,7 +34,7 @@
       window.removeEventListener('resize', this.boundVisibilityChangeHandler);
       this.replyControl.removeEventListener('transitionend', this.boundVisibilityChangeHandler);
       if (this.previewWrapper != null) {
-        this.previewWrapper.removeEventListener('scroll', this.boundVisibilityChangeHandler);
+        this.intersectionObserver.disconnect();
       }
       this.graphviz.destroy();
     }
@@ -61,7 +61,7 @@
         this.loop = this.options.repeat || false;
         this.addControls();
       }
-      this.visible = this.isVisible();
+      this.visible = !this.isEditorPreview && this.isVisible();
 
       this.render();
     }
@@ -235,7 +235,7 @@
     }
 
     render() {
-      if (this.isEditorPreview && !this.isVisible()) {
+      if (this.isEditorPreview && !this.visible) {
         return;
       }
       this.setRunning(true);
@@ -452,13 +452,27 @@
       window.addEventListener('resize', this.boundVisibilityChangeHandler);
       this.replyControl.addEventListener('transitionend', this.boundVisibilityChangeHandler);
       if (this.previewWrapper != null) {
-        this.previewWrapper.addEventListener('scroll', this.boundVisibilityChangeHandler);
+        const graphObject = this;
+        let options = {
+          root: this.previewWrapper,
+          rootMargin: '0px',
+          threshold: 0
+        }
+        this.intersectionObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            graphObject.visible = entry.isIntersecting;
+            if (graphObject.visible) {
+              graphObject.visibilityChangeHandler();
+            }
+          });
+        }, options);
+        this.intersectionObserver.observe(this.graphContainer.node());
       }
     }
 
     visibilityChangeHandler() {
       if (this.isEditorPreview) {
-        if (this.isVisible()) {
+        if (this.visible) {
           this.graphContainer.classed('visually-hidden', false);
           if (!this.isRendered) {
             this.render();
