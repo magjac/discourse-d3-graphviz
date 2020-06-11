@@ -118,9 +118,13 @@
         d3.select(this.paragraph).insert('span', () => this.nextElement)
           .text(this.textAfter);
       }
+      const dotBBCodeElements = this.dotBBCodeElements;
       const dotBBCodeParents = d3.selectAll(this.dotBBCodeElements).select(function () {
         return this.parentElement;
-      });
+      })
+        .filter(function () {
+          return dotBBCodeElements.includes(this);
+        });
       d3.selectAll(this.dotBBCodeElements).remove();
       const paragraphToKeep = this.paragraph;
       dotBBCodeParents.each(function () {
