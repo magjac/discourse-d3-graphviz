@@ -660,7 +660,8 @@
     graphObjectList.each((graphObject, graphIndex) => {
       const existsInDOM = document.body.contains(graphObject.graphvizContainer.node());
       const cookedParent = graphObject.cookedDiv.parentElement;
-      const topicBody = cookedParent && cookedParent.parentElement.parentElement;
+      const topicBody = cookedParent &&
+            cookedParent.parentElement.parentElement;
       const row = topicBody && topicBody.parentElement;
       const article = row && row.parentElement;
       const topicPost = article && article.parentElement;
