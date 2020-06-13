@@ -661,6 +661,7 @@
       const existsInDOM = document.body.contains(graphObject.graphvizContainer.node());
       const cookedParent = graphObject.cookedDiv.parentElement;
       const topicBody = cookedParent &&
+            cookedParent.parentElement &&
             cookedParent.parentElement.parentElement;
       const row = topicBody && topicBody.parentElement;
       const article = row && row.parentElement;
