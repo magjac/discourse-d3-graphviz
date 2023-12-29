@@ -3,6 +3,7 @@ describe('Inline rendering', () => {
   it('renders single static graph inline', () => {
     const title = 'Cypress testing: Single static inline';
     cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
     cy.getNewTopicButton().click();
     cy.getTitleInput().type(title)
     cy.typeDotSrcInEditorInput('[dot]digraph {a -> b}[/dot]');
