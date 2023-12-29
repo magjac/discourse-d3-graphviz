@@ -257,8 +257,8 @@
       const svg = this.graphvizContainer.selectAll('svg');
       const widthAttr = svg.attr('width');
       const heightAttr = svg.attr('height');
-      let width = widthAttr.includes('pt') ? width = widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
-      let height = heightAttr.includes('pt') ? height = heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
+      let width = widthAttr.includes('pt') ? widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
+      let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
       if (width > this.minWidth) {
         this.minWidth = width;
       }
