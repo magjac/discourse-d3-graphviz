@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+* Update to [Graphviz 9.0.0](https://gitlab.com/graphviz/graphviz/-/blob/main/CHANGELOG.md?ref_type=heads#900-2023-09-11) through [d3-graphviz 5.2.0](https://github.com/magjac/d3-graphviz/blob/master/CHANGELOG.md#520--2023-11-05) and [@hpcc-js/wasm 2.14.1](https://github.com/hpcc-systems/hpcc-js-wasm/blob/trunk/CHANGELOG.md#2141-2023-10-12).
+
 ### Fixed
 
 * Discourse shows error message for posts using `[dot]` and no graph is shown. #53
