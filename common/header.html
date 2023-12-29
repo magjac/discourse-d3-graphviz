@@ -735,6 +735,7 @@
             let foundInline = false;
             const re = /(\[dot[^\]]*\].*?\[\/dot\])/g;
             let lastIndex = 0;
+            let result;
             while ((result = re.exec(str)) !== null) {
               const textBefore = str.slice(lastIndex, result.index);
               const dotBBCodes = [result[0]];
