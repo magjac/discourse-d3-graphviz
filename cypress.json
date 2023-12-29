@@ -1,5 +1,0 @@
-{
-  "ignoreTestFiles": "*~",
-  "defaultCommandTimeout": 10000,
-  "waitForAnimations": false
-}
