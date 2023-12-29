@@ -570,7 +570,7 @@
             } :
           optionsObjects[optionsObjects.length - 1]
         );
-        attributes=dotBBCode.split('[dot')[1].split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
+        const attributes=dotBBCode.split('[dot')[1].split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
         for (attribute of attributes) {
           const [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
           if (value == 'true') {
