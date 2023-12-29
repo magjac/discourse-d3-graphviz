@@ -1,3 +1,65 @@
+Cypress.Commands.add("startApplication", () => {
+  cy.visit('http://localhost:4200/');
+});
+
+Cypress.Commands.add("startApplicationAndLogInAsCypressUser", () => {
+  cy.startApplication();
+  cy.logInAsCypressUser();
+});
+
+Cypress.Commands.add("getLogInButton", () => {
+  return cy.get('.login-button');
+});
+
+Cypress.Commands.add("getLogInModal", () => {
+  return cy.get('.login-modal');
+});
+
+Cypress.Commands.add("getLogInButton2", () => {
+  return cy.getLogInModal().find('#login-button');
+});
+
+Cypress.Commands.add("getLogInAccountNameInput", () => {
+  return cy.getLogInModal().find('#login-account-name');
+});
+
+Cypress.Commands.add("getLogInAccountPasswordInput", () => {
+  return cy.getLogInModal().find('#login-account-password');
+});
+
+Cypress.Commands.add("getLogInAlert", () => {
+  return cy.getLogInModal().find('#modal-alert');
+});
+
+Cypress.Commands.add("logInAsCypressUser", () => {
+  cy.getLogInButton().click();
+  cy.getLogInAccountNameInput().type("cypress_user");
+  cy.getLogInAccountPasswordInput().type("cypress_password");
+  cy.getLogInButton2().click();
+  // If the log in alert shows "Please wait before trying to log in again.", apply this patch to the local discourse repo:
+  //
+  //   diff --git a/config/site_settings.yml b/config/site_settings.yml
+  // index 675f99ade1..20a3cdc849 100644
+  // --- a/config/site_settings.yml
+  // +++ b/config/site_settings.yml
+  // @@ -2148,10 +2148,10 @@ rate_limits:
+  //      min: 0
+  //    max_logins_per_ip_per_hour:
+  //      min: 1
+  // -    default: 30
+  // +    default: 3000
+  //    max_logins_per_ip_per_minute:
+  //      min: 1
+  // -    default: 6
+  // +    default: 60
+  //    max_post_deletions_per_minute:
+  //      min: 0
+  //      default: 2
+
+  cy.getLogInAlert().should('not.exist');
+  cy.getLogInButton().should('not.exist');
+});
+
 Cypress.Commands.add("getCooked", () => {
   return cy.get('.cooked');
 });
