@@ -60,6 +60,34 @@ Cypress.Commands.add("logInAsCypressUser", () => {
   cy.getLogInButton().should('not.exist');
 });
 
+Cypress.Commands.add("getTopicList", () => {
+  cy.contains('Admin Guide: Getting Started');
+  return cy.get('.topic-list');
+});
+
+Cypress.Commands.add("getTopics", () => {
+  return cy.getTopicList().find('tr');
+});
+
+Cypress.Commands.add("getToggleAdminMenuButton", () => {
+  return cy.get('button.toggle-admin-menu>svg.d-icon-wrench').eq(0);
+});
+
+Cypress.Commands.add("getDeleteTopicButton", () => {
+  return cy.get('button.widget-button>svg.d-icon-far-trash-alt');
+});
+
+Cypress.Commands.add("deleteCypressTestingTopic", (title) => {
+  cy.getTopics().each((topic) => {
+    if (topic.text().includes(title + '\n')) {
+      cy.wrap(topic).find('td.main-link>span>a').click();
+      cy.getToggleAdminMenuButton().click();
+      cy.getDeleteTopicButton().click();
+      cy.go('back');
+    }
+  });
+});
+
 Cypress.Commands.add("getNewTopicButton", () => {
   return cy.get('#create-topic');
 });
