@@ -60,6 +60,27 @@ Cypress.Commands.add("logInAsCypressUser", () => {
   cy.getLogInButton().should('not.exist');
 });
 
+Cypress.Commands.add("getNewTopicButton", () => {
+  return cy.get('#create-topic');
+});
+
+Cypress.Commands.add("getTitleInput", () => {
+  return cy.get('#reply-title');
+});
+
+Cypress.Commands.add("getEditorInput", () => {
+  return cy.get('.d-editor-input');
+});
+
+Cypress.Commands.add("typeDotSrcInEditorInput", (dotSrc) => {
+  const escapedDotSrc = dotSrc.replace(/{/g, '{{}');
+  return cy.getEditorInput().type(escapedDotSrc);
+});
+
+Cypress.Commands.add("getCreateTopicButton", () => {
+  return cy.get('.create');
+});
+
 Cypress.Commands.add("getCooked", () => {
   return cy.get('.cooked');
 });
