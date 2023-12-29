@@ -544,6 +544,7 @@
           .slice(0, dotBBcode.indexOf('[/dot]'))
           .replace(/[^\]]*]/, '')
           .replace(/[“”]/g, '"')
+          .replace(/→/g, '->')
       );
       const optionsObjects = this.getOptionsObjects();
       const graphObject = new GraphObject(
