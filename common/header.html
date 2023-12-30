@@ -573,7 +573,7 @@
         );
         const attributes=dotBBCode.split('[dot')[1].split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
         for (const attribute of attributes) {
-          const [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
+          let [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
           if (value == 'true') {
             value = true;
           }
