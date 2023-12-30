@@ -15,7 +15,7 @@ describe('Block rendering', () => {
         });
         cy.wrap(paragraphs).findGraphContainers().then(graphContainers => {
           cy.wrap(graphContainers).findCode()
-            .should('have.text', ' digraph {a -> b} ');
+            .should('have.text', 'digraph {a -> b}');
         });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {
           cy.wrap(graphvizContainers).should('have.length', 1);
