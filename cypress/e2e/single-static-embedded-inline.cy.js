@@ -1,7 +1,10 @@
 describe('Inline rendering', () => {
 
   it('renders single static graph embedded in text inline', () => {
-    cy.visit('http://localhost:3000/t/single-embedded-static-inline/35');
+    const title = 'Cypress testing: Single static embedded inline';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, 'This is a graph: [dot]digraph {a -> b}[/dot]. That was a graph.');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
