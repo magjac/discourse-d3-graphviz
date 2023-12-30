@@ -4,10 +4,7 @@ describe('Inline rendering', () => {
     const title = 'Cypress testing: Single static inline';
     cy.startApplicationAndLogInAsCypressUser();
     cy.deleteCypressTestingTopic(title);
-    cy.getNewTopicButton().click();
-    cy.getTitleInput().type(title)
-    cy.typeDotSrcInEditorInput('[dot]digraph {a -> b}[/dot]');
-    cy.getCreateTopicButton().click();
+    cy.createNewTopic(title, '[dot]digraph {a -> b}[/dot]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');

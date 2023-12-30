@@ -4,10 +4,7 @@ describe('Block rendering', () => {
     const title = 'Cypress testing: Single static block';
     cy.startApplicationAndLogInAsCypressUser();
     cy.deleteCypressTestingTopic(title);
-    cy.getNewTopicButton().click();
-    cy.getTitleInput().type(title)
-    cy.typeDotSrcInEditorInput('[dot]\ndigraph {a -> b}\n[/dot]');
-    cy.getCreateTopicButton().click();
+    cy.createNewTopic(title, '[dot]\ndigraph {a -> b}\n[/dot]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');

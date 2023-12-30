@@ -109,6 +109,14 @@ Cypress.Commands.add("getCreateTopicButton", () => {
   return cy.get('.create');
 });
 
+Cypress.Commands.add("createNewTopic", (title, dotSrc) => {
+  cy.deleteCypressTestingTopic(title);
+  cy.getNewTopicButton().click();
+  cy.getTitleInput().type(title)
+  cy.typeDotSrcInEditorInput(dotSrc);
+  cy.getCreateTopicButton().click();
+});
+
 Cypress.Commands.add("getCooked", () => {
   return cy.get('.cooked');
 });
