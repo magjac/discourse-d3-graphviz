@@ -38,7 +38,7 @@ Cypress.Commands.add("logInAsCypressUser", () => {
   cy.getLogInButton2().click();
   // If the log in alert shows "Please wait before trying to log in again.", apply this patch to the local discourse repo:
   //
-  //   diff --git a/config/site_settings.yml b/config/site_settings.yml
+  // diff --git a/config/site_settings.yml b/config/site_settings.yml
   // index 675f99ade1..20a3cdc849 100644
   // --- a/config/site_settings.yml
   // +++ b/config/site_settings.yml
