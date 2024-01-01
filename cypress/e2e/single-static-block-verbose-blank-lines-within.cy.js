@@ -1,7 +1,10 @@
 describe('Block rendering', () => {
 
   it('renders single static graph block verbose with blank lines within the DOT source code', () => {
-    cy.visit('http://localhost:3000/t/single-static-block-verbose-with-blank-lines-within/41');
+    const title = 'Cypress testing: Single static block verbose with blank lines within';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, '[dot verbose=true]\ndigraph {\n\nnode [shape=box]\n\na -> b\n\n}\n[/dot]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
