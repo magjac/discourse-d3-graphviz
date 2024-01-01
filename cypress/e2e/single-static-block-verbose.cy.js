@@ -1,7 +1,10 @@
 describe('Block rendering', () => {
 
   it('renders single static graph block verbose', () => {
-    cy.visit('http://localhost:3000/t/single-static-block-verbose/40');
+    const title = 'Cypress testing: Single static block verbose';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, '[dot verbose=true]\ndigraph {\na -> b\n}\n[/dot]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
