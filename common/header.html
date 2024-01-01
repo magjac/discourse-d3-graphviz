@@ -170,13 +170,13 @@
       dotBBCodeElements.forEach(function (dotBBCodeElement) {
         console.log("magjac 366: removing dotBBCodeElement = ", dotBBCodeElement, " parent =", dotBBCodeElement.parentElement);
       });
-      this.dotBBCodeElements.forEach((element) => element.remove());
+      // this.dotBBCodeElements.forEach((element) => element.remove());
       const paragraphToKeep = this.paragraph;
       const uniqueBBCodeParents = d3.selectAll([...new Set(dotBBCodeParents.nodes())]);
       uniqueBBCodeParents.each(function () {
         console.log("magjac 380: this =", this);
         if (this !== paragraphToKeep) {
-          if (this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0].nodeName == 'BR')) {
+          //if (this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0].nodeName == 'BR')) {
             console.log("magjac 383: considering removing this =", this);
 //            const ids_to_keep = [];//"parent-of-i2"]; // ok
 //            const ids_to_keep = ["parent-of-i3"]; // not ok
@@ -212,7 +212,7 @@
                */
               this.remove();
             //}
-          }
+          //}
         }
       });
       this.graphContainer = graphContainer;
