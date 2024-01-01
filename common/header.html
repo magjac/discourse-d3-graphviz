@@ -67,6 +67,7 @@
     }
 
     replaceHTML() {
+      console.log("magjac 240: this.paragraph =", this.paragraph);
       d3.select(this.cookedDiv)
         .style('overflow', 'visible');
 
@@ -119,19 +120,100 @@
           .text(this.textAfter);
       }
       const dotBBCodeElements = this.dotBBCodeElements;
-      const dotBBCodeParents = d3.selectAll(this.dotBBCodeElements).select(function () {
+      d3.select(this.paragraph).classed('keep', true);
+
+      console.log("magjac 335: dotBBCodeElements =", dotBBCodeElements);
+/*
+      dotBBCodeElements.forEach(function (dotBBCodeElement) {
+        console.log("magjac 337: dotBBCodeElement = ", dotBBCodeElement, " parent =", dotBBCodeElement.parentElement);
+      });
+*/
+      const dotBBCodeParents = d3.selectAll(this.dotBBCodeElements).select(function (x, i) {
+        console.log("magjac 337b: this.nodeName =", this.nodeName);
+        if (this.nodeName != '#text') {
+          d3.select(this).attr("id", "i" + i);
+          d3.select(this).classed("bbcode", true);
+        }
+        d3.select(this.parentElement).attr("id", "parent-of-i" + i);
+        d3.select(this.parentElement).classed("parent-of-bbcode", true);
+        return this.parentElement;
+      })/* FIXME: the fix in 083273ce7c169a360769d0817747dbd133d15fa6 seems to be wrong:
+         * 1. There doesn't seem to be any BBCode element parents that were themselves BBCode elements
+           2. The fix incorrectly removes all elements which do NOT fulfill this condition, which are all element.
+              Therefore no parent elements are removed and blank line are incorrectly kept.
+        .filter(function () {
+          //console.log("magjac 338: this =", this);
+          return dotBBCodeElements.includes(this);
+        })*/;
+      console.log("magjac 340: dotBBCodeParents =", dotBBCodeParents.nodes());
+      const dotBBCodeParentsUnfiltered = d3.selectAll(this.dotBBCodeElements).select(function () {
+        console.log("magjac 350: this =", this, "this.parentElement =", this.parentElement);
         return this.parentElement;
       })
+      console.log("magjac 360: dotBBCodeParentsUnfiltered =", dotBBCodeParentsUnfiltered.nodes());
+
+/*
+      for (let i = 0; i < dotBBCodeParentsUnfiltered.size(); ++i) {
+        console.log("magjac 360a2: i = ", i, " includes = ", dotBBCodeParentsUnfiltered.nodes().includes(dotBBCodeParentsUnfiltered.nodes()[i]));
+        for (let j = 0; j < dotBBCodeParentsUnfiltered.size(); ++j) {
+          //console.log("magjac 360b: i = ", i, " j = ", j, " equal = ", dotBBCodeParentsUnfiltered.nodes()[i] == dotBBCodeParentsUnfiltered.nodes()[j]);
+        }
+      }
+*/
+      const dotBBCodeParentsFiltered = dotBBCodeParentsUnfiltered
         .filter(function () {
+          console.log("magjac 361: this =", this);
+          console.log("magjac 362: dotBBCodeElements.includes(this) =", dotBBCodeElements.includes(this));
           return dotBBCodeElements.includes(this);
         });
-      d3.selectAll(this.dotBBCodeElements).remove();
+      console.log("magjac 365: dotBBCodeParentsFiltered =", dotBBCodeParentsFiltered.nodes());
+      dotBBCodeElements.forEach(function (dotBBCodeElement) {
+        console.log("magjac 366: removing dotBBCodeElement = ", dotBBCodeElement, " parent =", dotBBCodeElement.parentElement);
+      });
+      //this.dotBBCodeElements.forEach((element) => element.remove());
       const paragraphToKeep = this.paragraph;
-      dotBBCodeParents.each(function () {
+      const x1 = new Set(dotBBCodeParents.nodes());
+      const x2 = [...x1];
+      const x3 = d3.selectAll(x2);
+      const uniqueBBCodeParents = d3.selectAll([...new Set(dotBBCodeParents.nodes())]);
+      uniqueBBCodeParents.each(function () {
+        console.log("magjac 380: this =", this);
         if (this !== paragraphToKeep) {
           if (this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0].nodeName == 'BR')) {
-            d3.select(this).remove();
-          }
+            console.log("magjac 383: considering removing this =", this);
+//            const ids_to_keep = [];//"parent-of-i2"]; // ok
+//            const ids_to_keep = ["parent-of-i3"]; // not ok
+//            const ids_to_keep = ["parent-of-i2", "parent-of-i3"];
+//            const ids_to_keep = ["parent-of-i2", "parent-of-i3", "parent-of-i4"];
+//            const ids_to_keep = ["parent-of-i2", "parent-of-i3", "parent-of-i4", "parent-of-i5"];
+            const ids_to_keep = ["parent-of-i3", "parent-of-i4", "parent-of-i5"]; // not ok
+            console.log("magjac 384: ids_to_keep =", ids_to_keep);
+            const this_id = d3.select(this).attr('id');
+            console.log("magjac 385: this_id =", this_id);
+            console.log("magjac 386:", ids_to_keep.includes(this_id));
+            if (!ids_to_keep.includes(this_id)) {
+              console.log("magjac 387: removing this =", this);
+              /*
+               * FIXME:
+               * When this DOT source is edited and another node is entered after 'a -> b',
+               * the removal of '<p id="parent-of-i2" class="parent-of-bbcode">' causes the error:
+               * 'Uncaught DOMException: Node.removeChild: The node to be removed is not a child of this node'
+               * in http://localhost:4200/assets/@glimmer/runtime.js.
+               * This does not seem to be during the actual removal of 'this', but later when the application
+               * replaces the preview itself.
+              [dot verbose=true]
+              digraph {
+
+              node [shape=box]
+
+              a -> b
+
+
+
+              }
+              [/dot]              this.remove();
+*/
+            }
         }
       });
       this.graphContainer = graphContainer;
