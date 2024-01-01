@@ -180,12 +180,12 @@
         if (this !== paragraphToKeep) {
           //if (this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0].nodeName == 'BR')) {
             console.log("magjac 383: considering removing this =", this);
-//            const ids_to_keep = [];//"parent-of-i2"]; // ok
+            const ids_to_keep = ["parent-of-i2"]; // ok
 //            const ids_to_keep = ["parent-of-i3"]; // not ok
 //            const ids_to_keep = ["parent-of-i2", "parent-of-i3"];
 //            const ids_to_keep = ["parent-of-i2", "parent-of-i3", "parent-of-i4"];
 //            const ids_to_keep = ["parent-of-i2", "parent-of-i3", "parent-of-i4", "parent-of-i5"];
-            const ids_to_keep = ["parent-of-i3", "parent-of-i4", "parent-of-i5"]; // not ok
+//            const ids_to_keep = ["parent-of-i3", "parent-of-i4", "parent-of-i5"]; // not ok
             console.log("magjac 384: ids_to_keep =", ids_to_keep);
             const this_id = d3.select(this).attr('id');
             console.log("magjac 385: this_id =", this_id);
