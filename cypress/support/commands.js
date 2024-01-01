@@ -101,7 +101,7 @@ Cypress.Commands.add("getEditorInput", () => {
 });
 
 Cypress.Commands.add("typeDotSrcInEditorInput", (dotSrc) => {
-  const escapedDotSrc = dotSrc.replace(/{/g, '{{}');
+  const escapedDotSrc = dotSrc.replace(/{/g, '{{}').replace(/\n/g, '{enter}');
   return cy.getEditorInput().type(escapedDotSrc);
 });
 
