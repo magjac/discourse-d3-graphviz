@@ -170,11 +170,8 @@
       dotBBCodeElements.forEach(function (dotBBCodeElement) {
         console.log("magjac 366: removing dotBBCodeElement = ", dotBBCodeElement, " parent =", dotBBCodeElement.parentElement);
       });
-      //this.dotBBCodeElements.forEach((element) => element.remove());
+      this.dotBBCodeElements.forEach((element) => element.remove());
       const paragraphToKeep = this.paragraph;
-      const x1 = new Set(dotBBCodeParents.nodes());
-      const x2 = [...x1];
-      const x3 = d3.selectAll(x2);
       const uniqueBBCodeParents = d3.selectAll([...new Set(dotBBCodeParents.nodes())]);
       uniqueBBCodeParents.each(function () {
         console.log("magjac 380: this =", this);
@@ -191,7 +188,7 @@
             const this_id = d3.select(this).attr('id');
             console.log("magjac 385: this_id =", this_id);
             console.log("magjac 386:", ids_to_keep.includes(this_id));
-            if (!ids_to_keep.includes(this_id)) {
+            //if (!ids_to_keep.includes(this_id)) {
               console.log("magjac 387: removing this =", this);
               /*
                * FIXME:
@@ -201,19 +198,21 @@
                * in http://localhost:4200/assets/@glimmer/runtime.js.
                * This does not seem to be during the actual removal of 'this', but later when the application
                * replaces the preview itself.
-              [dot verbose=true]
-              digraph {
+                [dot verbose=true]
+                digraph {
 
-              node [shape=box]
+                node [shape=box]
 
-              a -> b
+                a -> b
 
 
 
-              }
-              [/dot]              this.remove();
-*/
-            }
+                }
+                [/dot]
+               */
+              this.remove();
+            //}
+          }
         }
       });
       this.graphContainer = graphContainer;
