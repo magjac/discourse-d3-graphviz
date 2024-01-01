@@ -122,6 +122,7 @@ import { apiInitializer } from "discourse/lib/api";
       }
       const dotBBCodeElements = this.dotBBCodeElements;
       d3.select(this.paragraph).classed('keep', true);
+      console.log("magjac 248: this.paragraph =", this.paragraph);
 
       console.log("magjac 335: dotBBCodeElements =", dotBBCodeElements);
 /*
@@ -146,6 +147,7 @@ import { apiInitializer } from "discourse/lib/api";
           //console.log("magjac 338: this =", this);
           return dotBBCodeElements.includes(this);
         })*/;
+      console.log("magjac 249: this.paragraph =", this.paragraph);
       console.log("magjac 340: dotBBCodeParents =", dotBBCodeParents.nodes());
       const dotBBCodeParentsUnfiltered = d3.selectAll(this.dotBBCodeElements).select(function () {
         console.log("magjac 350: this =", this, "this.parentElement =", this.parentElement);
