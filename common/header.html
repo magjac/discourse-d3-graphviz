@@ -188,7 +188,7 @@
             const this_id = d3.select(this).attr('id');
             console.log("magjac 385: this_id =", this_id);
             console.log("magjac 386:", ids_to_keep.includes(this_id));
-            //if (!ids_to_keep.includes(this_id)) {
+            if (!ids_to_keep.includes(this_id)) {
               console.log("magjac 387: removing this =", this);
               /*
                * FIXME:
@@ -211,7 +211,7 @@
                 [/dot]
                */
               this.remove();
-            //}
+            }
           //}
         }
       });
