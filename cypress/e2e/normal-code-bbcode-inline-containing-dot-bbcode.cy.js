@@ -1,7 +1,10 @@
 describe('Normal [code] inline', () => {
 
   it('is left untouched', () => {
-    cy.visit('http://localhost:3000/t/normal-code-bbcode-inline-containing-dot-bbcode/51');
+    const title = 'Cypress testing: Normal code bbcode inline containing dot bbcode';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, '[code] [dot] digraph {a -> b} [/dot] [/code]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).findParagraphs().should('not.exist');
