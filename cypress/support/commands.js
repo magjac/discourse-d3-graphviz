@@ -47,7 +47,7 @@ Cypress.Commands.add("logInAsCypressUser", () => {
   //    max_logins_per_ip_per_hour:
   //      min: 1
   // -    default: 30
-  // +    default: 3000
+  // +    default: 3600
   //    max_logins_per_ip_per_minute:
   //      min: 1
   // -    default: 6
