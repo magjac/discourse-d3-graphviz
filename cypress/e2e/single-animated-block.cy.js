@@ -6,7 +6,10 @@ describe('Block rendering', () => {
   })
 
   it('renders single animated graph block', () => {
-    cy.visit('http://localhost:3000/t/single-animated-block/44');
+    const title = 'Cypress testing: Single animated block';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, '[dot]\ndigraph {\na\n}\n[/dot]\n[dot]\ndigraph {\na -> b\n}\n[/dot]\n[dot]\ndigraph {\na -> b\na -> c}\n[/dot]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
