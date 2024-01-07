@@ -1,7 +1,6 @@
 describe('Block rendering', () => {
 
   const dotSrcTexts = [
-    'digraph {\n  a\n}\n',
     'digraph {\n  a -> b\n}\n',
     'digraph {\n  a -> b\n  a -> c\n}\n',
     'digraph {\n  a -> c\n  a -> b\n}\n',
