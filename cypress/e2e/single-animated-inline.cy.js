@@ -6,7 +6,10 @@ describe('Inline rendering', () => {
   })
 
   it('renders single animated graph inline', () => {
-    cy.visit('http://localhost:3000/t/single-animated-inline/34');
+    const title = 'Cypress testing: Single animated inline';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, '[dot]digraph {a}[/dot][dot]digraph {a -> b}[/dot][dot]digraph {a -> b a -> c}[/dot]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
