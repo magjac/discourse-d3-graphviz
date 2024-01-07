@@ -1,4 +1,5 @@
-<script type="text/discourse-plugin" version="0.8">
+import { apiInitializer } from "discourse/lib/api";
+
   const topBarHeight = 60; // FIXME: Determine this dynamically
   const collapseEditorGraphsNotVisible = false;
   class GraphObject {
@@ -652,6 +653,8 @@
     }
   }
 
+export default apiInitializer("1.13.0", (api) => {
+
   const graphObjectList = new GraphObjectList();
   // For each post (replies and the editor)
   api.decorateCooked($elem => {
@@ -782,5 +785,4 @@
     graphObjectList.append(graphObject);
     graphObject.init();
   }
-
-</script>
+});
