@@ -5,8 +5,11 @@ describe('Inline rendering', () => {
       .click({multiple: true, force: true });
   })
 
-  it('renders single animated graph inline with newline between the two DOT BBCodes', () => {
-    cy.visit('http://localhost:3000/t/single-animated-inline-on-separate-lines/50');
+  it('renders single animated graph inline with newline between the DOT BBCodes', () => {
+    const title = 'Cypress testing: Single animated inline on separate lines';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, '[dot]digraph {a}[/dot]\n[dot]digraph {a -> b}[/dot]\n[dot]digraph {a -> b a -> c}[/dot]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
