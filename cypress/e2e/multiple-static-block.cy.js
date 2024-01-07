@@ -1,7 +1,10 @@
 describe('Block rendering', () => {
 
   it('renders multiple static graph blocks', () => {
-    cy.visit('http://localhost:3000/t/two-paragraphs-with-one-static-block-graph-in-each/48');
+    const title = 'Cypress testing: Two paragraphs with one static block graph in each';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, '[dot]\ndigraph {\n  a -> b\n}\n[/dot]\n\n[dot]\ndigraph {\n  a -> b\n  a -> c}\n[/dot]\n');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ababc');
