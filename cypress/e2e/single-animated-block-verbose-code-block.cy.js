@@ -1,6 +1,7 @@
 describe('Block rendering', () => {
 
   const dotSrcTexts = [
+    'digraph {\n  a\n}\n',
     'digraph {\n  a -> b\n}\n',
     'digraph {\n  a -> b\n  a -> c\n}\n',
     'digraph {\n  a -> c\n  a -> b\n}\n',
@@ -15,7 +16,14 @@ describe('Block rendering', () => {
   })
 
   it('renders single animated graph block', () => {
-    cy.visit('http://localhost:3000/t/single-animated-block-code-verbose/71');
+    const title = 'Cypress testing: Single animated block code verbose';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    let text = '';
+    for (const dotSrcText of dotSrcTexts) {
+      text += `[dot verbose=true]\n[code]\n${dotSrcText}\n[/code]\n[/dot]\n`;
+    }
+    cy.createNewTopic(title, text);
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
