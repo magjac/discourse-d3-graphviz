@@ -14,7 +14,10 @@ describe('Inline rendering', () => {
       'aabba->bcca->c',
       '. Those were the animated graphs.',
     ];
-    cy.visit('http://localhost:3000/t/multiple-embedded-animated-inline/37');
+    const title = 'Cypress testing: Multiple embedded animated inline';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, 'First line\nSecond line: This is an animated graph: [dot repeat=true]digraph {a}[/dot][dot]digraph {a -> b}[/dot][dot]digraph {a -> b a -> c}[/dot], this is another animated graph: [dot repeat=true]digraph {a}[/dot][dot]digraph {a -> b}[/dot][dot]digraph {a -> b a -> c}[/dot][dot]digraph {a -> b b -> c d -> b}[/dot]. Those were the animated graphs.\nThird line');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).findParagraphs().then(paragraphs => {
