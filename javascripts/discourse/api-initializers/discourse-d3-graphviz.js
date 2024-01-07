@@ -566,8 +566,8 @@ import { apiInitializer } from "discourse/lib/api";
           {},
           optionsObjects.length == 0 ?
             {
-              useWorker: false,
-              useSharedWorker: false,
+              useWorker: true,
+              useSharedWorker: true,
               play: true,
             } :
           optionsObjects[optionsObjects.length - 1]
