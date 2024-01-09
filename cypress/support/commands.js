@@ -11,7 +11,7 @@ Cypress.Commands.add("getStopButtons", () => {
 });
 
 Cypress.Commands.add("findParagraphs", {prevSubject: true}, (subject, index) => {
-  return cy.wrap(subject).find('> p');
+  return cy.wrap(subject).find('> p:visible');
 });
 
 Cypress.Commands.add("findSpans", {prevSubject: true}, (subject, index) => {
