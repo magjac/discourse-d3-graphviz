@@ -122,16 +122,16 @@ import { apiInitializer } from "discourse/lib/api";
       const dotBBCodeElements = this.dotBBCodeElements;
       const dotBBCodeParents = d3.selectAll(this.dotBBCodeElements).select(function () {
         return this.parentElement;
-      })
-        .filter(function () {
-          return dotBBCodeElements.includes(this);
-        });
+      });
       d3.selectAll(this.dotBBCodeElements).remove();
       const paragraphToKeep = this.paragraph;
       dotBBCodeParents.each(function () {
         if (this !== paragraphToKeep) {
           if (this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0].nodeName == 'BR')) {
-            d3.select(this).remove();
+            // removing some parent elements causes this error:
+            //   Uncaught DOMException: Node.removeChild: The node to be removed is not a child of this node
+            // We therefore just hide them instead
+            d3.select(this).style('display', 'none');
           }
         }
       });
