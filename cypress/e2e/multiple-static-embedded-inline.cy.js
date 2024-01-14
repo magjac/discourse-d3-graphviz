@@ -8,7 +8,10 @@ describe('Inline rendering', () => {
       'aabba->bcca->c',
       '. Those were the graphs.',
     ];
-    cy.visit('http://localhost:3000/t/multiple-embedded-static-inline/36');
+    const title = 'Cypress testing: Multiple embedded static inline';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, 'First line\nSecond line: This is a graph: [dot]digraph {a -> b}[/dot], this is another graph: [dot]digraph{a -> b a -> c}[/dot]. Those were the graphs.\nThird line');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ababc');

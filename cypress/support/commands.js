@@ -1,3 +1,122 @@
+Cypress.Commands.add("startApplication", () => {
+  cy.visit('http://localhost:4200/');
+});
+
+Cypress.Commands.add("startApplicationAndLogInAsCypressUser", () => {
+  cy.startApplication();
+  cy.logInAsCypressUser();
+});
+
+Cypress.Commands.add("getLogInButton", () => {
+  return cy.get('.login-button');
+});
+
+Cypress.Commands.add("getLogInModal", () => {
+  return cy.get('.login-modal');
+});
+
+Cypress.Commands.add("getLogInButton2", () => {
+  return cy.getLogInModal().find('#login-button');
+});
+
+Cypress.Commands.add("getLogInAccountNameInput", () => {
+  return cy.getLogInModal().find('#login-account-name');
+});
+
+Cypress.Commands.add("getLogInAccountPasswordInput", () => {
+  return cy.getLogInModal().find('#login-account-password');
+});
+
+Cypress.Commands.add("getLogInAlert", () => {
+  return cy.getLogInModal().find('#modal-alert');
+});
+
+Cypress.Commands.add("logInAsCypressUser", () => {
+  cy.getLogInButton().click();
+  cy.getLogInAccountNameInput().type("cypress_user");
+  cy.getLogInAccountPasswordInput().type("cypress_password");
+  cy.getLogInButton2().click();
+  // If the log in alert shows "Please wait before trying to log in again.", apply this patch to the local discourse repo:
+  //
+  // diff --git a/config/site_settings.yml b/config/site_settings.yml
+  // index 675f99ade1..20a3cdc849 100644
+  // --- a/config/site_settings.yml
+  // +++ b/config/site_settings.yml
+  // @@ -2148,10 +2148,10 @@ rate_limits:
+  //      min: 0
+  //    max_logins_per_ip_per_hour:
+  //      min: 1
+  // -    default: 30
+  // +    default: 3600
+  //    max_logins_per_ip_per_minute:
+  //      min: 1
+  // -    default: 6
+  // +    default: 60
+  //    max_post_deletions_per_minute:
+  //      min: 0
+  //      default: 2
+
+  cy.getLogInAlert().should('not.exist');
+  cy.getLogInButton().should('not.exist');
+});
+
+Cypress.Commands.add("getTopicList", () => {
+  cy.contains('Admin Guide: Getting Started');
+  return cy.get('.topic-list');
+});
+
+Cypress.Commands.add("getTopics", () => {
+  return cy.getTopicList().find('tr');
+});
+
+Cypress.Commands.add("getToggleAdminMenuButton", () => {
+  return cy.get('button.toggle-admin-menu>svg.d-icon-wrench').eq(0);
+});
+
+Cypress.Commands.add("getDeleteTopicButton", () => {
+  return cy.get('button.widget-button>svg.d-icon-far-trash-alt');
+});
+
+Cypress.Commands.add("deleteCypressTestingTopic", (title) => {
+  cy.getTopics().each((topic) => {
+    if (topic.text().includes(title + '\n')) {
+      cy.wrap(topic).find('td.main-link>span>a').click();
+      cy.getToggleAdminMenuButton().click();
+      cy.getDeleteTopicButton().click();
+      cy.go('back');
+    }
+  });
+});
+
+Cypress.Commands.add("getNewTopicButton", () => {
+  return cy.get('#create-topic');
+});
+
+Cypress.Commands.add("getTitleInput", () => {
+  return cy.get('#reply-title');
+});
+
+Cypress.Commands.add("getEditorInput", () => {
+  return cy.get('.d-editor-input');
+});
+
+Cypress.Commands.add("typeDotSrcInEditorInput", (dotSrc) => {
+  const escapedDotSrc = dotSrc.replace(/{/g, '{{}').replace(/\n/g, '{enter}');
+  return cy.getEditorInput().type(escapedDotSrc);
+});
+
+Cypress.Commands.add("getCreateTopicButton", () => {
+  return cy.get('.create');
+});
+
+Cypress.Commands.add("createNewTopic", (title, dotSrc) => {
+  cy.deleteCypressTestingTopic(title);
+  cy.getNewTopicButton().click();
+  cy.getTitleInput().type(title)
+  cy.typeDotSrcInEditorInput(dotSrc);
+  cy.getCreateTopicButton().click();
+});
+
 Cypress.Commands.add("getCooked", () => {
   return cy.get('.cooked');
 });
@@ -11,7 +130,7 @@ Cypress.Commands.add("getStopButtons", () => {
 });
 
 Cypress.Commands.add("findParagraphs", {prevSubject: true}, (subject, index) => {
-  return cy.wrap(subject).find('> p');
+  return cy.wrap(subject).find('> p:visible');
 });
 
 Cypress.Commands.add("findSpans", {prevSubject: true}, (subject, index) => {

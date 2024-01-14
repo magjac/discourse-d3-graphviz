@@ -1,7 +1,10 @@
-describe('Block rendering', () => {
+describe('Inline rendering', () => {
 
-  it('renders single static graph block verbose with blank lines within the DOT source code', () => {
-    cy.visit('http://localhost:3000/t/single-static-block-verbose-with-blank-lines-within/41');
+  it('renders single static graph inline', () => {
+    const title = 'Cypress testing: Single static inline';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, '[dot]digraph {a -> b}[/dot]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
@@ -9,10 +12,8 @@ describe('Block rendering', () => {
         cy.wrap(paragraphs).should('have.length', 1);
         cy.wrap(paragraphs).findSpans().then(spans => {
           cy.wrap(spans).should('have.length', 1);
-        });
-        cy.wrap(paragraphs).findGraphContainers().then(graphContainers => {
-          cy.wrap(graphContainers).findCode()
-            .should('have.text', 'digraph {\n\nnode [shape=box]\n\na -> b\n\n}\n');
+          cy.wrap(spans).eq(0).invoke('text').then(text => text.replace(/\n/g, ''))
+            .should('eq', 'aabba->b');
         });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {
           cy.wrap(graphvizContainers).should('have.length', 1);

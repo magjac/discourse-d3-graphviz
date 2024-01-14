@@ -1,4 +1,5 @@
-<script type="text/discourse-plugin" version="0.8">
+import { apiInitializer } from "discourse/lib/api";
+
   const topBarHeight = 60; // FIXME: Determine this dynamically
   const collapseEditorGraphsNotVisible = false;
   class GraphObject {
@@ -44,7 +45,7 @@
     }
     get graphContainer() {
       return this._graphContainer;
-   }
+    }
     get dotSrc() {
       return this.dotSrcs[this.index];
     }
@@ -121,16 +122,16 @@
       const dotBBCodeElements = this.dotBBCodeElements;
       const dotBBCodeParents = d3.selectAll(this.dotBBCodeElements).select(function () {
         return this.parentElement;
-      })
-        .filter(function () {
-          return dotBBCodeElements.includes(this);
-        });
+      });
       d3.selectAll(this.dotBBCodeElements).remove();
       const paragraphToKeep = this.paragraph;
       dotBBCodeParents.each(function () {
         if (this !== paragraphToKeep) {
           if (this.childNodes.length == 0 || (this.childNodes.length == 1 && this.childNodes[0].nodeName == 'BR')) {
-            d3.select(this).remove();
+            // removing some parent elements causes this error:
+            //   Uncaught DOMException: Node.removeChild: The node to be removed is not a child of this node
+            // We therefore just hide them instead
+            d3.select(this).style('display', 'none');
           }
         }
       });
@@ -215,7 +216,7 @@
         .style('height', '0px')
       ;
 
-      buttonNames = [
+      const buttonNames = [
         'play',
         'pause',
         'stop',
@@ -257,8 +258,8 @@
       const svg = this.graphvizContainer.selectAll('svg');
       const widthAttr = svg.attr('width');
       const heightAttr = svg.attr('height');
-      let width = widthAttr.includes('pt') ? width = widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
-      let height = heightAttr.includes('pt') ? height = heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
+      let width = widthAttr.includes('pt') ? widthAttr.replace('pt', '') * 4 / 3 : +widthAttr;
+      let height = heightAttr.includes('pt') ? heightAttr.replace('pt', '') * 4 / 3 : +heightAttr;
       if (width > this.minWidth) {
         this.minWidth = width;
       }
@@ -544,6 +545,7 @@
           .slice(0, dotBBcode.indexOf('[/dot]'))
           .replace(/[^\]]*]/, '')
           .replace(/[“”]/g, '"')
+          .replace(/→/g, '->')
       );
       const optionsObjects = this.getOptionsObjects();
       const graphObject = new GraphObject(
@@ -570,9 +572,9 @@
             } :
           optionsObjects[optionsObjects.length - 1]
         );
-        attributes=dotBBCode.split('[dot')[1].split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
-        for (attribute of attributes) {
-          const [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
+        const attributes=dotBBCode.split('[dot')[1].split(']')[0].match(/ *[^ \]]*=(“[^”]*”|[^ \]]*|\([^\)]*\))/g) || [];
+        for (const attribute of attributes) {
+          let [name, value] = attribute.trim().replace(/[“”]/g, '').split('=')
           if (value == 'true') {
             value = true;
           }
@@ -634,8 +636,8 @@
     }
     delete(graphObject) {
       graphObject.release();
-      prevGraphObject = graphObject.prevGraph;
-      nextGraphObject = graphObject.nextGraph;
+      const prevGraphObject = graphObject.prevGraph;
+      const nextGraphObject = graphObject.nextGraph;
       if (prevGraphObject == null) {
         this.head = nextGraphObject;
       }
@@ -650,6 +652,8 @@
       }
     }
   }
+
+export default apiInitializer("1.13.0", (api) => {
 
   const graphObjectList = new GraphObjectList();
   // For each post (replies and the editor)
@@ -735,6 +739,7 @@
             let foundInline = false;
             const re = /(\[dot[^\]]*\].*?\[\/dot\])/g;
             let lastIndex = 0;
+            let result;
             while ((result = re.exec(str)) !== null) {
               const textBefore = str.slice(lastIndex, result.index);
               const dotBBCodes = [result[0]];
@@ -780,5 +785,4 @@
     graphObjectList.append(graphObject);
     graphObject.init();
   }
-
-</script>
+});

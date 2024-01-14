@@ -1,7 +1,10 @@
 describe('Block rendering verbose with code block', () => {
 
   it('preserves whitespace', () => {
-    cy.visit('http://localhost:3000/t/single-static-block-code-block-verbose/47');
+    const title = 'Cypress testing: Single static block code block verbose';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, '[dot verbose=true]\n[code]\ndigraph {\n\n  node [shape=box]\n\n\n  c -> d\n\n}\n\n[/code]\n[/dot]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'cd');

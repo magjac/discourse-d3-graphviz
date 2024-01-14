@@ -1,7 +1,10 @@
-describe('Inline rendering', () => {
+describe('Block rendering', () => {
 
-  it('renders single static graph inline', () => {
-    cy.visit('http://localhost:3000/t/single-static-inline/33');
+  it('renders single static graph inline verbose', () => {
+    const title = 'Cypress testing: Single static inline verbose';
+    cy.startApplicationAndLogInAsCypressUser();
+    cy.deleteCypressTestingTopic(title);
+    cy.createNewTopic(title, '[dot verbose=true] digraph {a -> b} [/dot]');
     cy.getCooked().then(cooked => {
       cy.wrap(cooked).should('have.length', 1);
       cy.wrap(cooked).find('text').should('have.text', 'ab');
@@ -9,8 +12,10 @@ describe('Inline rendering', () => {
         cy.wrap(paragraphs).should('have.length', 1);
         cy.wrap(paragraphs).findSpans().then(spans => {
           cy.wrap(spans).should('have.length', 1);
-          cy.wrap(spans).eq(0).invoke('text').then(text => text.replace(/\n/g, ''))
-            .should('eq', 'aabba->b');
+        });
+        cy.wrap(paragraphs).findGraphContainers().then(graphContainers => {
+          cy.wrap(graphContainers).findCode()
+            .should('have.text', ' digraph {a -> b} ');
         });
         cy.wrap(paragraphs).findGraphvizContainers().then(graphvizContainers => {
           cy.wrap(graphvizContainers).should('have.length', 1);
