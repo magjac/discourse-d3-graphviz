@@ -1,6 +1,6 @@
 {
   "name": "discourse-d3-graphviz",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Discourse theme component for rendering animated Graphviz graphs using DOT source code",
   "main": "index.js",
   "scripts": {
