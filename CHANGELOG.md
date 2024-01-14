@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Graph preview stops updating after editing #44
 
-## [1.0.0]
+## [1.0.0] – 2020-06-11
 
 ### Added
 
