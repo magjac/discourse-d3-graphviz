@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] – 2024-01-14
+
 ### Changed
 
 * Update to [Graphviz 9.0.0](https://gitlab.com/graphviz/graphviz/-/blob/main/CHANGELOG.md?ref_type=heads#900-2023-09-11) through [d3-graphviz 5.2.0](https://github.com/magjac/d3-graphviz/blob/master/CHANGELOG.md#520--2023-11-05) and [@hpcc-js/wasm 2.14.1](https://github.com/hpcc-systems/hpcc-js-wasm/blob/trunk/CHANGELOG.md#2141-2023-10-12).
@@ -33,7 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * All basic functionality
 
-[Unreleased]: https://github.com/magjac/discourse-d3-graphviz/compare/1.0.2..HEAD
+[Unreleased]: https://github.com/magjac/discourse-d3-graphviz/compare/1.1.0..HEAD
+[1.1.0]: https://github.com/magjac/discourse-d3-graphviz/compare/1.0.2...1.1.0
 [1.0.2]: https://github.com/magjac/discourse-d3-graphviz/compare/1.0.1...1.0.2
 [1.0.1]: https://github.com/magjac/discourse-d3-graphviz/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/magjac/discourse-d3-graphviz/compare/0.0.0...1.0.0
