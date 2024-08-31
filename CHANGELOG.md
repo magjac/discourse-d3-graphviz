@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+* Upgrade to
+  [Graphviz 12.1.0](https://gitlab.com/graphviz/graphviz/-/blob/main/CHANGELOG.md#1210--2024-08-12)
+  through
+  [d3-graphviz 5.6.0](https://github.com/magjac/d3-graphviz/blob/master/CHANGELOG.md#560--2024-08-18)
+  and
+  [@hpcc-js/wasm 2.20.0](https://github.com/hpcc-systems/hpcc-js-wasm/blob/trunk/packages/wasm/CHANGELOG.md#2200-2024-08-15).
+
 ## [1.1.0] – 2024-01-14
 
 ### Changed
