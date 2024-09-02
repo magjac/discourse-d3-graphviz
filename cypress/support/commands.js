@@ -74,7 +74,7 @@ Cypress.Commands.add("getToggleAdminMenuButton", () => {
 });
 
 Cypress.Commands.add("getDeleteTopicButton", () => {
-  return cy.get('button.widget-button>svg.d-icon-far-trash-alt');
+  return cy.get('button.popup-menu-btn-danger>svg.d-icon-far-trash-alt');
 });
 
 Cypress.Commands.add("deleteCypressTestingTopic", (title) => {
