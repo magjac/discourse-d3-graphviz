@@ -84,6 +84,7 @@ Cypress.Commands.add("deleteCypressTestingTopic", (title) => {
       cy.getToggleAdminMenuButton().click();
       cy.getDeleteTopicButton().click();
       cy.go('back');
+      cy.reload();
     }
   });
 });
