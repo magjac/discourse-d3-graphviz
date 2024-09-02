@@ -23,6 +23,6 @@
   },
   "homepage": "https://github.com/magjac/discourse-d3-graphviz#readme",
   "devDependencies": {
-    "cypress": "^13.6.2"
+    "cypress": "^13.14.1"
   }
 }
